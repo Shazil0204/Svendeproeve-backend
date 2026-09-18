@@ -1,6 +1,6 @@
 namespace LMSBackend.Domain.Enums.Tasks
 {
-    public enum TaskStatus
+    public enum StudentTaskStatus
     {
         NotSubmitted,
         Submitted,

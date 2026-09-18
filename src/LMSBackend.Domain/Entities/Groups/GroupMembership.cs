@@ -1,7 +1,21 @@
-namespace LMSBackend.Domain.Entities.Groups
+using LMSBackend.Domain.Entities.Users;
+
+namespace LMSBackend.Domain.Entities.Groups;
+
+public class GroupMembership
 {
-    public class GroupMembership
+    public Guid GroupId { get; private set; }
+    public Guid StudentId { get; private set; }
+    public DateTime AddedAt { get; private set; }
+    public StudentGroup Group { get; private set; } = null!;
+    public User Student { get; private set; } = null!;
+
+    private GroupMembership() { }
+
+    public GroupMembership(Guid groupId, Guid studentId)
     {
-        
+        GroupId = groupId;
+        StudentId = studentId;
+        AddedAt = DateTime.UtcNow;
     }
 }

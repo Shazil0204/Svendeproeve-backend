@@ -1,6 +1,6 @@
 namespace LMSBackend.Domain.Enums.Auditing
 {
-    public enum AuditLog
+    public enum AuditAction
     {
         Created = 1,
         Updated = 2,
