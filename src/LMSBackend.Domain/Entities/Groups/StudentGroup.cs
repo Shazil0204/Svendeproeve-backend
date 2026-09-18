@@ -4,9 +4,9 @@ public class StudentGroup
 {
     public Guid Id { get; private set; }
     public string Name { get; private set; } = string.Empty;
-    public DateTime CreatedAt { get; private set; }
+    public DateTimeOffset CreatedAt { get; private set; }
     public bool IsSoftDeleted { get; private set; }
-    public DateTime? DeletedAt { get; private set; }
+    public DateTimeOffset? DeletedAt { get; private set; }
 
     private StudentGroup() { }
 
@@ -14,7 +14,7 @@ public class StudentGroup
     {
         Id = Guid.NewGuid();
         Name = name;
-        CreatedAt = DateTime.UtcNow;
+        CreatedAt = DateTimeOffset.UtcNow;
     }
 
     public void UpdateName(string newName)
@@ -25,6 +25,6 @@ public class StudentGroup
     public void SoftDelete()
     {
         IsSoftDeleted = true;
-        DeletedAt = DateTime.UtcNow;
+        DeletedAt = DateTimeOffset.UtcNow;
     }
 }

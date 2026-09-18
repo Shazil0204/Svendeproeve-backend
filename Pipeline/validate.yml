@@ -1,0 +1,18 @@
+validate:
+  stage: validate
+  image: mcr.microsoft.com/dotnet/sdk:10.0
+  tags:
+    - backend
+  cache:
+    key: dotnet-nuget
+    paths:
+      - .nuget/packages/
+  variables:
+    NUGET_PACKAGES: "$CI_PROJECT_DIR/.nuget/packages"
+  script:
+    - dotnet restore LMSBackend.slnx
+    - dotnet build LMSBackend.slnx --configuration Release --no-restore
+    - dotnet test LMSBackend.slnx --configuration Release --no-build --no-restore
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "push"'
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'

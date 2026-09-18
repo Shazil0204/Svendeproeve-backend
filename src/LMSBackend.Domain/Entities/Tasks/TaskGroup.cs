@@ -9,7 +9,7 @@ public class TaskGroup
     public Guid TaskId { get; private set; }
     public Guid GroupId { get; private set; }
     public StudentTaskStatus Status { get; private set; }
-    public DateTime AssignedAt { get; private set; }
+    public DateTimeOffset AssignedAt { get; private set; }
     public Task Task { get; private set; } = null!;
     public StudentGroup Group { get; private set; } = null!;
 
@@ -21,7 +21,7 @@ public class TaskGroup
         TaskId = taskId;
         GroupId = groupId;
         Status = StudentTaskStatus.NotSubmitted;
-        AssignedAt = DateTime.UtcNow;
+        AssignedAt = DateTimeOffset.UtcNow;
     }
 
     public void UpdateStatus(StudentTaskStatus newStatus)

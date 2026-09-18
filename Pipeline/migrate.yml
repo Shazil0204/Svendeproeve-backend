@@ -1,0 +1,24 @@
+migrate_staging:
+  stage: migrate
+  image: mcr.microsoft.com/dotnet/sdk:10.0
+  tags:
+    - backend
+  variables:
+    ASPNETCORE_ENVIRONMENT: Staging
+    APP_BASE_URL: "$STAGING_APP_BASE_URL"
+  before_script:
+    - dotnet restore LMSBackend.slnx
+    - dotnet tool install --global dotnet-ef --version 10.0.12
+    - export PATH="$PATH:$HOME/.dotnet/tools"
+  script:
+    - dotnet ef database update --project src/LMSBackend.Infrastructure/LMSBackend.Infrastructure.csproj --startup-project src/LMSBackend.API/LMSBackend.API.csproj --configuration Release
+  environment:
+    name: staging
+  resource_group: staging-database
+  allow_failure: true
+  when: manual
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH == "staging"'
+      when: manual
+      allow_failure: true
+    - when: never

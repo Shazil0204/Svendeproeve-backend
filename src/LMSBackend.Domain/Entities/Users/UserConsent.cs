@@ -9,7 +9,7 @@ namespace LMSBackend.Domain.Entities.Users
         public Guid UserId { get; private set; }
         public ConsentType ConsentType { get; private set; }
         public ConsentVersion ConsentVersion { get; private set; } = null!;
-        public DateTime GrantedAt { get; private set; }
+        public DateTimeOffset GrantedAt { get; private set; }
 
         public User User { get; private set; } = null!;
 
@@ -21,7 +21,7 @@ namespace LMSBackend.Domain.Entities.Users
             UserId = userId;
             ConsentType = consentType;
             ConsentVersion = consentVersion;
-            GrantedAt = DateTime.UtcNow;
+            GrantedAt = DateTimeOffset.UtcNow;
         }
     }
 }

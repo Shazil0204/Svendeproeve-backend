@@ -5,21 +5,21 @@ public class RefreshToken
     public Guid Id { get; private set; }
     public Guid UserId { get; private set; }
     public string TokenHash { get; private set; } = string.Empty;
-    public DateTime ExpiresAt { get; private set; }
-    public DateTime CreatedAt { get; private set; }
+    public DateTimeOffset ExpiresAt { get; private set; }
+    public DateTimeOffset CreatedAt { get; private set; }
     public bool IsRevoked { get; private set; } = false;
-    public DateTime? RevokedAt { get; private set; }
+    public DateTimeOffset? RevokedAt { get; private set; }
     public User User { get; private set; } = null!;
 
     private RefreshToken() { }
 
-    public RefreshToken(Guid userId, string tokenHash, DateTime expiresAt)
+    public RefreshToken(Guid userId, string tokenHash, DateTimeOffset expiresAt)
     {
         Id = Guid.NewGuid();
         UserId = userId;
         TokenHash = tokenHash;
         ExpiresAt = expiresAt;
-        CreatedAt = DateTime.UtcNow;
+        CreatedAt = DateTimeOffset.UtcNow;
     }
 
     public void Revoke()
@@ -28,6 +28,6 @@ public class RefreshToken
             throw new InvalidOperationException("Refresh token is already revoked.");
 
         IsRevoked = true;
-        RevokedAt = DateTime.UtcNow;
+        RevokedAt = DateTimeOffset.UtcNow;
     }
 }

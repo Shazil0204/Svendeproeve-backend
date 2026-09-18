@@ -12,8 +12,8 @@ public class User
     public UserRole Role { get; private set; } = UserRole.Student;
     public bool IsActive { get; private set; } = true;
     public bool IsSoftDeleted { get; private set; } = false;
-    public DateTime? DeletedAt { get; private set; } = null;
-    public DateTime CreatedAt { get; private set; }
+    public DateTimeOffset? DeletedAt { get; private set; } = null;
+    public DateTimeOffset CreatedAt { get; private set; }
 
     private User() { } // For EF Core
 
@@ -24,7 +24,7 @@ public class User
         Email = email;
         PasswordHash = passwordHash;
         Role = role;
-        CreatedAt = DateTime.UtcNow;
+        CreatedAt = DateTimeOffset.UtcNow;
     }
 
     public void UserStatus(bool isActive)
@@ -47,6 +47,6 @@ public class User
 
         IsActive = false;
         IsSoftDeleted = true;
-        DeletedAt = DateTime.UtcNow;
+        DeletedAt = DateTimeOffset.UtcNow;
     }
 }

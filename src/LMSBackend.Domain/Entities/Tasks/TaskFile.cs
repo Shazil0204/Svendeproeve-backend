@@ -8,7 +8,7 @@ public class TaskFile
     public Guid TaskId { get; private set; }
     public FileName FileName { get; private set; } = null!;
     public FilePath FilePath { get; private set; } = null!;
-    public DateTime UploadedAt { get; private set; }
+    public DateTimeOffset UploadedAt { get; private set; }
     public Task Task { get; private set; } = null!;
 
     private TaskFile() { }
@@ -22,6 +22,6 @@ public class TaskFile
         TaskId = taskId;
         FileName = fileName;
         FilePath = filePath;
-        UploadedAt = DateTime.UtcNow;
+        UploadedAt = DateTimeOffset.UtcNow;
     }
 }

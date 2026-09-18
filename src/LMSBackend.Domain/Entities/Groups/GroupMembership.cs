@@ -6,7 +6,7 @@ public class GroupMembership
 {
     public Guid GroupId { get; private set; }
     public Guid StudentId { get; private set; }
-    public DateTime AddedAt { get; private set; }
+    public DateTimeOffset AddedAt { get; private set; }
     public StudentGroup Group { get; private set; } = null!;
     public User Student { get; private set; } = null!;
 
@@ -16,6 +16,6 @@ public class GroupMembership
     {
         GroupId = groupId;
         StudentId = studentId;
-        AddedAt = DateTime.UtcNow;
+        AddedAt = DateTimeOffset.UtcNow;
     }
 }

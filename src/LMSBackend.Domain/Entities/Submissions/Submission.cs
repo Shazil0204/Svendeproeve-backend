@@ -11,7 +11,7 @@ public class Submission
     public Guid? TaskGroupId { get; private set; }
     public Guid SubmittedByUserId { get; private set; }
     public string? Comment { get; private set; }
-    public DateTime SubmittedAt { get; private set; }
+    public DateTimeOffset SubmittedAt { get; private set; }
     public TaskStudent? TaskStudent { get; private set; }
     public TaskGroup? TaskGroup { get; private set; }
     public User SubmittedByUser { get; private set; } = null!;
@@ -30,6 +30,6 @@ public class Submission
 
         SubmittedByUserId = submittedByUserId;
         Comment = comment;
-        SubmittedAt = DateTime.UtcNow;
+        SubmittedAt = DateTimeOffset.UtcNow;
     }
 }

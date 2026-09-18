@@ -6,7 +6,7 @@ public class TeacherSubject
 {
     public Guid TeacherId { get; private set; }
     public Guid SubjectId { get; private set; }
-    public DateTime AssignedAt { get; private set; }
+    public DateTimeOffset AssignedAt { get; private set; }
     public User Teacher { get; private set; } = null!;
     public Subject Subject { get; private set; } = null!;
 
@@ -16,6 +16,6 @@ public class TeacherSubject
     {
         TeacherId = teacherId;
         SubjectId = subjectId;
-        AssignedAt = DateTime.UtcNow;
+        AssignedAt = DateTimeOffset.UtcNow;
     }
 }

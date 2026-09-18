@@ -10,16 +10,16 @@ public class Task
     public Guid CreatedByUserId { get; private set; }
     public string Title { get; private set; } = string.Empty;
     public string Description { get; private set; } = string.Empty;
-    public DateTime? Deadline { get; private set; }
-    public DateTime CreatedAt { get; private set; }
+    public DateTimeOffset? Deadline { get; private set; }
+    public DateTimeOffset CreatedAt { get; private set; }
     public bool IsSoftDeleted { get; private set; }
-    public DateTime? DeletedAt { get; private set; }
+    public DateTimeOffset? DeletedAt { get; private set; }
     public Subject Subject { get; private set; } = null!;
     public User CreatedByUser { get; private set; } = null!;
 
     private Task() { }
 
-    public Task(Guid subjectId, Guid createdByUserId, string title, string description, DateTime? deadline)
+    public Task(Guid subjectId, Guid createdByUserId, string title, string description, DateTimeOffset? deadline)
     {
         Id = Guid.NewGuid();
         SubjectId = subjectId;
@@ -27,10 +27,10 @@ public class Task
         Title = title;
         Description = description;
         Deadline = deadline;
-        CreatedAt = DateTime.UtcNow;
+        CreatedAt = DateTimeOffset.UtcNow;
     }
 
-    public void UpdateDetails(string title, string description, DateTime? deadline)
+    public void UpdateDetails(string title, string description, DateTimeOffset? deadline)
     {
         Title = title;
         Description = description;
@@ -40,6 +40,6 @@ public class Task
     public void SoftDelete()
     {
         IsSoftDeleted = true;
-        DeletedAt = DateTime.UtcNow;
+        DeletedAt = DateTimeOffset.UtcNow;
     }
 }
