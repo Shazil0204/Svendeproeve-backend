@@ -15,6 +15,8 @@ validate:
       --user "$(id -u):$(id -g)"
       -v "$CI_PROJECT_DIR:/workspace"
       -w /workspace
+      -e HOME=/workspace
+      -e DOTNET_CLI_HOME=/workspace/.dotnet
       -e NUGET_PACKAGES=/workspace/.nuget/packages
       mcr.microsoft.com/dotnet/sdk:10.0
       bash -c 'dotnet restore LMSBackend.slnx &&
