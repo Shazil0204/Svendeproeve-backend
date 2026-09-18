@@ -1,6 +1,5 @@
 stages:
   - validate
-  - migrate
 
 workflow:
   rules:
@@ -10,4 +9,3 @@ workflow:
 
 include:
   - local: "Pipeline/validate.yml"
-  - local: "Pipeline/migrate.yml"
