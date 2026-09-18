@@ -56,3 +56,9 @@ dotnet ef database update `
   --startup-project src/LMSBackend.API
 
 ```
+
+## Run PostgreSQL on Docker
+
+```
+docker compose --env-file .env -f Docker/docker-compose.yaml up -d --build database
+```
