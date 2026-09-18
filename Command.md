@@ -62,3 +62,11 @@ dotnet ef database update `
 ```
 docker compose --env-file .env -f Docker/docker-compose.yaml up -d --build database
 ```
+
+## Runner access to Docker
+
+```
+sudo usermod -aG docker gitlab-runner
+sudo systemctl restart gitlab-runner
+sudo -u gitlab-runner -H docker ps
+```
