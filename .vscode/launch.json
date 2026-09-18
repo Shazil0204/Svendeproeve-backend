@@ -9,6 +9,7 @@
             "program": "${workspaceFolder}/src/LMSBackend.API/bin/Debug/net10.0/LMSBackend.API.dll",
             "args": [],
             "cwd": "${workspaceFolder}/src/LMSBackend.API",
+            "envFile": "${workspaceFolder}/.env",
             "stopAtEntry": false,
             "serverReadyAction": {
                 "action": "openExternally",
@@ -16,13 +17,7 @@
             },
             "env": {
                 "ASPNETCORE_ENVIRONMENT": "Development",
-                "ASPNETCORE_URLS": "http://localhost:5000",
-                "ConnectionStrings__DefaultConnection": "Host=localhost;Port=5432;Database=LMSbackend_db;Username=postgres;Password=postgres_dev_password",
-                "JWT_SECRET": "your-super-long-random-secret-key-change-this",
-                "JWT_ISSUER": "LMSBackend.API",
-                "JWT_AUDIENCE": "LMSBackend.Client",
-                "JWT_ACCESS_TOKEN_MINUTES": "15",
-                "JWT_REFRESH_TOKEN_DAYS": "7"
+                "ASPNETCORE_URLS": "http://localhost:5000"
             }
         },
         {
