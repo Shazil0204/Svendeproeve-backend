@@ -12,10 +12,10 @@ validate:
     - mkdir -p "$CI_PROJECT_DIR/.nuget/packages"
     - >-
       docker run --rm --name "$CI_CONTAINER_NAME"
+      --user "$(id -u):$(id -g)"
       -v "$CI_PROJECT_DIR:/workspace"
-      -v "$CI_PROJECT_DIR/.nuget/packages:/root/.nuget/packages"
       -w /workspace
-      -e NUGET_PACKAGES=/root/.nuget/packages
+      -e NUGET_PACKAGES=/workspace/.nuget/packages
       mcr.microsoft.com/dotnet/sdk:10.0
       bash -c 'dotnet restore LMSBackend.slnx &&
       dotnet build LMSBackend.slnx --configuration Release --no-restore &&

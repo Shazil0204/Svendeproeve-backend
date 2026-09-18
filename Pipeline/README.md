@@ -12,3 +12,6 @@ The `validate` job uses the `backend` runner tag and mounts the checkout into
 `mcr.microsoft.com/dotnet/sdk:10.0`. It restores, builds, and tests the backend
 inside a temporary container using `docker run --rm`. The `after_script` also
 removes the named container, including after a failed command.
+
+The container runs with the GitLab runner user's UID and GID so generated
+`.nuget`, `bin`, and `obj` files remain removable by the runner.
