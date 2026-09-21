@@ -8,19 +8,19 @@ namespace LMSBackend.Domain.Entities.Users
         public Guid Id { get; private set; }
         public Guid UserId { get; private set; }
         public ConsentType ConsentType { get; private set; }
-        public ConsentVersion ConsentVersion { get; private set; } = null!;
+        public string ConsentVersion { get; private set; } = null!;
         public DateTimeOffset GrantedAt { get; private set; }
 
         public User User { get; private set; } = null!;
 
         private UserConsent() { }
 
-        public UserConsent(Guid userId, ConsentType consentType, ConsentVersion consentVersion)
+        public UserConsent(Guid userId, ConsentType consentType)
         {
             Id = Guid.NewGuid();
             UserId = userId;
             ConsentType = consentType;
-            ConsentVersion = consentVersion;
+            ConsentVersion = "Version 1.0.0";
             GrantedAt = DateTimeOffset.UtcNow;
         }
     }

@@ -1,14 +1,21 @@
+using System.Text;
 using LMSBackend.API.Middlewares;
 using LMSBackend.API.Services;
 using LMSBackend.Application.Abstractions.AuditLog;
 using LMSBackend.Application.Abstractions.Authentication;
 using LMSBackend.Application.Abstractions.Persistence;
 using LMSBackend.Application.Abstractions.Repositories;
+using LMSBackend.Application.Abstractions.Users;
 using LMSBackend.Application.Services.Auditing;
+using LMSBackend.Application.Services.Authentication;
+using LMSBackend.Application.Services.Users;
 using LMSBackend.Infrastructure.Auditing;
+using LMSBackend.Infrastructure.Authentication;
 using LMSBackend.Infrastructure.Data;
 using LMSBackend.Infrastructure.Repositories;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 
 DotNetEnv.Env.TraversePath().Load();
 
@@ -25,6 +32,56 @@ builder.Services.AddScoped<AuditSaveChangesInterceptor>();
 builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 builder.Services.AddScoped<IAuditLogRepository, AuditLogRepository>();
 builder.Services.AddScoped<IAuditService, AuditService>();
+builder.Services.AddScoped<IAuthRepository, AuthRepository>();
+builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IPasswordHashing, PasswordHashing>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<ITokenService, TokenService>();
+
+string jwtSecret = Environment.GetEnvironmentVariable("JWT_SECRET")
+    ?? throw new InvalidOperationException(
+        "JWT_SECRET is not configured.");
+
+string jwtIssuer = Environment.GetEnvironmentVariable("JWT_ISSUER")
+    ?? throw new InvalidOperationException(
+        "JWT_ISSUER is not configured.");
+
+string jwtAudience = Environment.GetEnvironmentVariable("JWT_AUDIENCE")
+    ?? throw new InvalidOperationException(
+        "JWT_AUDIENCE is not configured.");
+
+builder.Services
+    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+
+            ValidIssuer = jwtIssuer,
+            ValidAudience = jwtAudience,
+
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(jwtSecret))
+        };
+
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                context.Token =
+                    context.Request.Cookies["access_token"];
+
+                return Task.CompletedTask;
+            }
+        };
+    });
+
+builder.Services.AddAuthorization();
 
 builder.Services.AddDbContext<AppDbContext>((serviceProvider, options) =>
 {

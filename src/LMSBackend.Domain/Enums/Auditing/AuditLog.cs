@@ -8,7 +8,7 @@ namespace LMSBackend.Domain.Enums.Auditing
         Assigned = 4,
         LoggedIn = 5,
         LoggedOut = 6,
-        LoginFailed = 7,
-        PasswordChanged = 8
+        PasswordChanged = 7,
+        RefreshTokenRevoked = 8
     }
 }

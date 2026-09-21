@@ -6,7 +6,8 @@ namespace LMSBackend.API.Services;
 public sealed class CurrentUserService : ICurrentUserService
 {
     private readonly IHttpContextAccessor _httpContextAccessor;
-
+    private Guid? _explicitUserId;
+    
     public CurrentUserService(IHttpContextAccessor httpContextAccessor)
     {
         _httpContextAccessor = httpContextAccessor;
@@ -16,6 +17,11 @@ public sealed class CurrentUserService : ICurrentUserService
     {
         get
         {
+            if (_explicitUserId.HasValue)
+            {
+                return _explicitUserId;
+            }
+
             string? value = _httpContextAccessor.HttpContext?
                 .User.FindFirstValue(ClaimTypes.NameIdentifier);
 
@@ -23,5 +29,10 @@ public sealed class CurrentUserService : ICurrentUserService
                 ? userId
                 : null;
         }
+    }
+
+    public void SetUserId(Guid? userId)
+    {
+        _explicitUserId = userId;
     }
 }
