@@ -6,6 +6,9 @@ using LMSBackend.Domain.Enums.Users;
 using LMSBackend.Application.Abstractions.Repositories;
 using LMSBackend.Application.Abstractions.Groups;
 using LMSBackend.Application.Abstractions.Persistence;
+using LMSBackend.Application.Abstractions.AuditLog;
+using LMSBackend.Application.Abstractions.Authentication;
+using LMSBackend.Domain.Enums.Auditing;
 
 namespace LMSBackend.Application.Services.Groups;
 
@@ -13,12 +16,16 @@ public sealed class GroupService : IGroupService
 {
     private readonly IGroupRepository _repository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IAuditService _auditService;
+    private readonly ICurrentUserService _currentUserService;
 
 
-    public GroupService(IGroupRepository repository, IUnitOfWork unitOfWork)
+    public GroupService(IGroupRepository repository, IUnitOfWork unitOfWork, IAuditService auditService, ICurrentUserService currentUserService)
     {
         _repository = repository;
         _unitOfWork = unitOfWork;
+        _auditService = auditService;
+        _currentUserService = currentUserService;
     }
 
     public async Task<IReadOnlyList<GroupDto>> ListAsync(CancellationToken cancellationToken) =>
@@ -48,29 +55,54 @@ public sealed class GroupService : IGroupService
 
     public async Task<GroupDto> CreateAsync(string name, CancellationToken cancellationToken)
     {
+        Guid userId = _currentUserService.UserId ?? throw new UnauthorizedAccessException("User is not authenticated.");
         name = ValidateName(name);
         await CheckNameAsync(name, null, cancellationToken);
         StudentGroup group = new StudentGroup(name);
         await _repository.AddAsync(group, cancellationToken);
+        await _auditService.LogAsync(
+            userId,
+            AuditAction.Created,
+            "Group created",
+            nameof(StudentGroup),
+            group.Id,
+            cancellationToken);
+
         await _unitOfWork.SaveChangesAsync(cancellationToken);
         return new GroupDto(group.Id, group.Name, group.CreatedAt);
     }
 
     public async Task RenameAsync(Guid id, string name, CancellationToken cancellationToken)
     {
+        Guid userId = _currentUserService.UserId ?? throw new UnauthorizedAccessException("User is not authenticated.");
         StudentGroup group = await FindAsync(id, cancellationToken);
         name = ValidateName(name);
         await CheckNameAsync(name, id, cancellationToken);
         group.UpdateName(name);
         await _repository.UpdateAsync(group, cancellationToken);
+        await _auditService.LogAsync(
+            userId,
+            AuditAction.Updated,
+            "Group renamed",
+            nameof(StudentGroup),
+            group.Id,
+            cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
     }
 
     public async Task DeleteAsync(Guid id, CancellationToken cancellationToken)
     {
+        Guid userId = _currentUserService.UserId ?? throw new UnauthorizedAccessException("User is not authenticated.");
         StudentGroup group = await FindAsync(id, cancellationToken);
         group.SoftDelete();
         await _repository.UpdateAsync(group, cancellationToken);
+        await _auditService.LogAsync(
+            userId,
+            AuditAction.Deleted,
+            "Group deleted",
+            nameof(StudentGroup),
+            group.Id,
+            cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
     }
 
