@@ -1,3 +1,5 @@
+using LMSBackend.Domain.Exceptions;
+
 namespace LMSBackend.Domain.ValueObjects.Progression;
 
 public record class Percentage
@@ -7,9 +9,7 @@ public record class Percentage
     public Percentage(decimal value)
     {
         if (value < 0 || value > 100)
-            throw new ArgumentOutOfRangeException(
-                nameof(value),
-                "Percentage must be between 0 and 100.");
+            throw new DomainValidationException("Percentage must be between 0 and 100.");
 
         Value = value;
     }

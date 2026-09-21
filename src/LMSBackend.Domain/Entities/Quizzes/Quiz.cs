@@ -1,5 +1,6 @@
 using LMSBackend.Domain.Entities.Subjects;
 using LMSBackend.Domain.Entities.Users;
+using LMSBackend.Domain.Exceptions;
 using LMSBackend.Domain.ValueObjects.Progression;
 
 namespace LMSBackend.Domain.Entities.Quizzes;
@@ -49,7 +50,7 @@ public class Quiz
     public void SoftDelete()
     {
         if (IsSoftDeleted)
-            throw new InvalidOperationException("Quiz is already soft deleted.");
+            throw new DomainValidationException("Quiz is already soft deleted.");
 
         IsSoftDeleted = true;
         DeletedAt = DateTimeOffset.UtcNow;
