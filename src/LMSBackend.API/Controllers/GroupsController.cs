@@ -10,17 +10,24 @@ namespace LMSBackend.API.Controllers;
 
 [ApiController]
 [Route("api/v1/[controller]")]
-public class GroupsController(IGroupService groups) : ControllerBase
+public class GroupsController : ControllerBase
 {
+    private readonly IGroupService _groups;
+    
+    public GroupsController(IGroupService groups)
+    {
+        _groups = groups;
+    }
+
     [HttpGet]
     [Authorize(Roles = $"{nameof(UserRole.Teacher)}, {nameof(UserRole.Student)}")]
     public async Task<IActionResult> List(CancellationToken cancellationToken)
     {
         if (User.IsInRole(nameof(UserRole.Teacher)))
-            return Ok(await groups.ListAsync(cancellationToken));
+            return Ok(await _groups.ListAsync(cancellationToken));
         if (!TryGetStudentId(out var studentId))
             return Forbid();
-        return Ok(await groups.ListForStudentAsync(studentId, cancellationToken));
+        return Ok(await _groups.ListForStudentAsync(studentId, cancellationToken));
     }
 
     [HttpGet("{id:guid}")]
@@ -28,17 +35,17 @@ public class GroupsController(IGroupService groups) : ControllerBase
     public async Task<IActionResult> Get(Guid id, CancellationToken cancellationToken)
     {
         if (User.IsInRole(nameof(UserRole.Teacher)))
-            return Ok(await groups.GetAsync(id, cancellationToken));
+            return Ok(await _groups.GetAsync(id, cancellationToken));
         if (!TryGetStudentId(out var studentId))
             return Forbid();
-        return Ok(await groups.GetForStudentAsync(id, studentId, cancellationToken));
+        return Ok(await _groups.GetForStudentAsync(id, studentId, cancellationToken));
     }
 
     [HttpPost]
     [Authorize(Roles = nameof(UserRole.Teacher))]
     public async Task<IActionResult> Create(GroupNameRequest request, CancellationToken cancellationToken)
     {
-        GroupDto group = await groups.CreateAsync(request.Name, cancellationToken);
+        GroupDto group = await _groups.CreateAsync(request.Name, cancellationToken);
         return CreatedAtAction(nameof(Get), new { id = group.Id }, group);
     }
 
@@ -46,7 +53,7 @@ public class GroupsController(IGroupService groups) : ControllerBase
     [Authorize(Roles = nameof(UserRole.Teacher))]
     public async Task<IActionResult> Rename(Guid id, GroupNameRequest request, CancellationToken cancellationToken)
     {
-        await groups.RenameAsync(id, request.Name, cancellationToken);
+        await _groups.RenameAsync(id, request.Name, cancellationToken);
         return NoContent();
     }
 
@@ -54,7 +61,7 @@ public class GroupsController(IGroupService groups) : ControllerBase
     [Authorize(Roles = nameof(UserRole.Teacher))]
     public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
     {
-        await groups.DeleteAsync(id, cancellationToken);
+        await _groups.DeleteAsync(id, cancellationToken);
         return NoContent();
     }
 
@@ -62,7 +69,7 @@ public class GroupsController(IGroupService groups) : ControllerBase
     [Authorize(Roles = nameof(UserRole.Teacher))]
     public async Task<IActionResult> AddStudents(Guid id, [FromBody] GroupStudentsRequest request, CancellationToken cancellationToken)
     {
-        await groups.AddStudentsAsync(id, request.StudentIds, cancellationToken);
+        await _groups.AddStudentsAsync(id, request.StudentIds, cancellationToken);
         return NoContent();
     }
 
@@ -70,7 +77,7 @@ public class GroupsController(IGroupService groups) : ControllerBase
     [Authorize(Roles = nameof(UserRole.Teacher))]
     public async Task<IActionResult> RemoveStudents(Guid id, [FromBody] GroupStudentsRequest request, CancellationToken cancellationToken)
     {
-        await groups.RemoveStudentsAsync(id, request.StudentIds, cancellationToken);
+        await _groups.RemoveStudentsAsync(id, request.StudentIds, cancellationToken);
         return NoContent();
     }
 

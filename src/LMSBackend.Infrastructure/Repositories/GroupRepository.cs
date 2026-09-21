@@ -8,77 +8,63 @@ using Npgsql;
 
 namespace LMSBackend.Infrastructure.Repositories;
 
-public sealed class GroupRepository(AppDbContext context) : IGroupRepository
+public sealed class GroupRepository : IGroupRepository
 {
+    private readonly AppDbContext _context;
+    public GroupRepository(AppDbContext context)
+    {
+        _context = context;
+    }
     public async Task<IReadOnlyList<StudentGroup>> GetAllAsync(CancellationToken cancellationToken) =>
-        await context.StudentGroups.AsNoTracking().Where(g => !g.IsSoftDeleted)
+        await _context.StudentGroups.AsNoTracking().Where(g => !g.IsSoftDeleted)
             .OrderBy(g => g.Name).ToListAsync(cancellationToken);
 
     public Task<StudentGroup?> GetByIdAsync(Guid id, CancellationToken cancellationToken) =>
-        context.StudentGroups.SingleOrDefaultAsync(g => g.Id == id && !g.IsSoftDeleted, cancellationToken);
+        _context.StudentGroups.SingleOrDefaultAsync(g => g.Id == id && !g.IsSoftDeleted, cancellationToken);
 
     public async Task<IReadOnlyList<StudentGroup>> GetForStudentAsync(Guid studentId, CancellationToken cancellationToken) =>
-        await context.GroupMemberships.AsNoTracking()
+        await _context.GroupMemberships.AsNoTracking()
             .Where(m => m.StudentId == studentId && !m.Group.IsSoftDeleted)
             .Select(m => m.Group).OrderBy(g => g.Name).ToListAsync(cancellationToken);
 
     public Task<bool> NameExistsAsync(string name, Guid? exceptId, CancellationToken cancellationToken) =>
-        context.StudentGroups.AnyAsync(g => g.Name == name && (!exceptId.HasValue || g.Id != exceptId.Value), cancellationToken);
+        _context.StudentGroups.AnyAsync(g => g.Name == name && (!exceptId.HasValue || g.Id != exceptId.Value), cancellationToken);
 
     public async Task AddAsync(StudentGroup group, CancellationToken cancellationToken)
     {
-        context.StudentGroups.Add(group);
-        await SaveAsync(cancellationToken);
+        _context.StudentGroups.Add(group);
     }
 
     public async Task UpdateAsync(StudentGroup group, CancellationToken cancellationToken)
     {
-        context.StudentGroups.Update(group);
-        await SaveAsync(cancellationToken);
+        _context.StudentGroups.Update(group);
     }
 
     public async Task<IReadOnlyList<GroupMembership>> GetMembershipsAsync(Guid groupId, CancellationToken cancellationToken) =>
-        await context.GroupMemberships.AsNoTracking().Include(m => m.Student)
+        await _context.GroupMemberships.AsNoTracking().Include(m => m.Student)
             .Where(m => m.GroupId == groupId && !m.Student.IsSoftDeleted)
             .OrderBy(m => m.Student.Name).ToListAsync(cancellationToken);
 
     public Task<GroupMembership?> GetMembershipAsync(Guid groupId, Guid studentId, CancellationToken cancellationToken) =>
-        context.GroupMemberships.SingleOrDefaultAsync(m => m.GroupId == groupId && m.StudentId == studentId, cancellationToken);
+        _context.GroupMemberships.SingleOrDefaultAsync(m => m.GroupId == groupId && m.StudentId == studentId, cancellationToken);
 
     public async Task<IReadOnlyList<User>> GetStudentsAsync(Guid[] studentIds, CancellationToken cancellationToken) =>
-        await context.Users.AsNoTracking()
+        await _context.Users.AsNoTracking()
             .Where(u => studentIds.Contains(u.Id) && !u.IsSoftDeleted).ToListAsync(cancellationToken);
 
     public async Task<IReadOnlyList<GroupMembership>> GetMembershipsAsync(Guid groupId, Guid[] studentIds, CancellationToken cancellationToken) =>
-        await context.GroupMemberships
+        await _context.GroupMemberships
             .Where(m => m.GroupId == groupId && studentIds.Contains(m.StudentId)).ToListAsync(cancellationToken);
 
     public async Task AddMembershipsAsync(IEnumerable<GroupMembership> memberships, CancellationToken cancellationToken)
     {
-        context.GroupMemberships.AddRange(memberships);
-        await SaveAsync(cancellationToken);
+        _context.GroupMemberships.AddRange(memberships);
     }
 
     public async Task RemoveMembershipsAsync(IEnumerable<GroupMembership> memberships, CancellationToken cancellationToken)
     {
-        context.GroupMemberships.RemoveRange(memberships);
-        await SaveAsync(cancellationToken);
+        _context.GroupMemberships.RemoveRange(memberships);
     }
 
-    private async Task SaveAsync(CancellationToken cancellationToken)
-    {
-        try { await context.SaveChangesAsync(cancellationToken); }
-        catch (DbUpdateException ex) when (ex.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation } postgres)
-        {
-            switch (postgres.ConstraintName)
-            {
-                case "IX_StudentGroups_Name":
-                    throw new ConflictException("A group with this name already exists.");
-                case "PK_GroupMemberships":
-                    throw new ConflictException("Student is already a member.");
-                default:
-                    throw;
-            }
-        }
-    }
+
 }

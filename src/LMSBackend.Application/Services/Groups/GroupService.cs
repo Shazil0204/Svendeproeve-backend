@@ -5,12 +5,21 @@ using LMSBackend.Domain.Entities.Users;
 using LMSBackend.Domain.Enums.Users;
 using LMSBackend.Application.Abstractions.Repositories;
 using LMSBackend.Application.Abstractions.Groups;
+using LMSBackend.Application.Abstractions.Persistence;
 
 namespace LMSBackend.Application.Services.Groups;
 
-public sealed class GroupService(IGroupRepository repository) : IGroupService
+public sealed class GroupService : IGroupService
 {
-    private readonly IGroupRepository _repository = repository;
+    private readonly IGroupRepository _repository;
+    private readonly IUnitOfWork _unitOfWork;
+
+
+    public GroupService(IGroupRepository repository, IUnitOfWork unitOfWork)
+    {
+        _repository = repository;
+        _unitOfWork = unitOfWork;
+    }
 
     public async Task<IReadOnlyList<GroupDto>> ListAsync(CancellationToken cancellationToken) =>
         (await _repository.GetAllAsync(cancellationToken))
@@ -43,6 +52,7 @@ public sealed class GroupService(IGroupRepository repository) : IGroupService
         await CheckNameAsync(name, null, cancellationToken);
         StudentGroup group = new StudentGroup(name);
         await _repository.AddAsync(group, cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
         return new GroupDto(group.Id, group.Name, group.CreatedAt);
     }
 
@@ -53,6 +63,7 @@ public sealed class GroupService(IGroupRepository repository) : IGroupService
         await CheckNameAsync(name, id, cancellationToken);
         group.UpdateName(name);
         await _repository.UpdateAsync(group, cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
     }
 
     public async Task DeleteAsync(Guid id, CancellationToken cancellationToken)
@@ -60,6 +71,7 @@ public sealed class GroupService(IGroupRepository repository) : IGroupService
         StudentGroup group = await FindAsync(id, cancellationToken);
         group.SoftDelete();
         await _repository.UpdateAsync(group, cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
     }
 
     public async Task AddStudentsAsync(Guid id, IReadOnlyCollection<Guid> studentIds, CancellationToken cancellationToken)
@@ -75,6 +87,7 @@ public sealed class GroupService(IGroupRepository repository) : IGroupService
             throw new ConflictException("One or more students are already members.");
 
         await _repository.AddMembershipsAsync(ids.Select(studentId => new GroupMembership(id, studentId)), cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
     }
 
     public async Task RemoveStudentsAsync(Guid id, IReadOnlyCollection<Guid> studentIds, CancellationToken cancellationToken)
@@ -86,6 +99,7 @@ public sealed class GroupService(IGroupRepository repository) : IGroupService
             throw new NotFoundException("One or more memberships were not found.");
 
         await _repository.RemoveMembershipsAsync(memberships, cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
     }
 
     private static Guid[] ValidateStudentIds(IReadOnlyCollection<Guid>? studentIds)
