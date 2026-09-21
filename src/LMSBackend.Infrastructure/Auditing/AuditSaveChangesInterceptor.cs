@@ -20,12 +20,12 @@ public sealed class AuditSaveChangesInterceptor : SaveChangesInterceptor
         InterceptionResult<int> result,
         CancellationToken cancellationToken = default)
     {
-        var context = eventData.Context;
+        DbContext? context = eventData.Context;
 
         if (context is null)
             return base.SavingChangesAsync(eventData, result, cancellationToken);
 
-        var entries = context.ChangeTracker
+        List<Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry>? entries = context.ChangeTracker
             .Entries()
             .Where(e =>
                 e.Entity is not AuditLog &&
@@ -36,30 +36,35 @@ public sealed class AuditSaveChangesInterceptor : SaveChangesInterceptor
 
         foreach (var entry in entries)
         {
-            var action = entry.State switch
+            AuditAction action = entry.State switch
             {
                 EntityState.Added => AuditAction.Created,
-                EntityState.Modified => AuditAction.Updated,
                 EntityState.Deleted => AuditAction.Deleted,
+                EntityState.Modified
+                    when entry.Metadata.FindProperty("IsSoftDeleted") is not null &&
+                        entry.Property("IsSoftDeleted").CurrentValue is true &&
+                        entry.Property("IsSoftDeleted").OriginalValue is false
+                    => AuditAction.Deleted,
+                EntityState.Modified => AuditAction.Updated,
                 _ => throw new InvalidOperationException()
             };
 
-            var entityType = entry.Metadata.ClrType.Name;
+            string? entityType = entry.Metadata.ClrType.Name;
 
             Guid? entityId = null;
 
-            var primaryKey = entry.Metadata.FindPrimaryKey();
+            Microsoft.EntityFrameworkCore.Metadata.IKey? primaryKey = entry.Metadata.FindPrimaryKey();
 
             if (primaryKey is not null && primaryKey.Properties.Count == 1)
             {
-                var keyValue = entry.Property(
+                object? keyValue = entry.Property(
                     primaryKey.Properties[0].Name).CurrentValue;
 
                 if (keyValue is Guid id)
                     entityId = id;
             }
 
-            var auditLog = new AuditLog(
+            AuditLog? auditLog = new AuditLog(
                 _currentUserService.UserId,
                 action,
                 $"{entityType} {action.ToString().ToLowerInvariant()}",

@@ -41,11 +41,24 @@ public class User
         PasswordHash = newPasswordHash;
     }
 
+    public void UpdateUserNameAndEmail(string newName, Email newEmail)
+    {
+        Name = newName?.Trim() ?? throw new DomainValidationException("Name cannot be null.");
+        Email = newEmail ?? throw new DomainValidationException("Email cannot be null.");
+    }
+
+    public void ChangeUserActiveStatus(bool isActive)
+    {
+        IsActive = isActive;
+    }
+
     public void SoftDelete()
     {
         if (IsSoftDeleted)
             throw new DomainValidationException("User is already soft deleted.");
-
+        
+        Name = $"Deleted User {Id}";
+        Email = new Email($"deleted+{Id}@example.com");
         IsActive = false;
         IsSoftDeleted = true;
         DeletedAt = DateTimeOffset.UtcNow;

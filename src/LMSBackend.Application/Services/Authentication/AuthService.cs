@@ -103,10 +103,7 @@ public class AuthService : IAuthService
             user.Id,
             cancellationToken);
 
-        if (existingRefreshToken is not null)
-        {
-            existingRefreshToken.Revoke();
-        }
+        existingRefreshToken?.Revoke();
 
         IReadOnlyList<ConsentType> missingConsents = await _userRepository.GetMissingConsentsAsync(
             user.Id,
@@ -159,16 +156,13 @@ public class AuthService : IAuthService
     public async Task LogoutUserAsync(CancellationToken cancellationToken = default)
     {
         Guid userId = _currentUserService.UserId ?? throw new UnauthorizedAccessException("User is not authenticated.");
-        User? user = _userRepository.GetByIdAsync(userId, cancellationToken).Result ?? throw new NotFoundException("User not found.");
+        User? user = await _userRepository.GetByIdAsync(userId, cancellationToken) ?? throw new NotFoundException("User not found.");
 
         RefreshToken? existingRefreshToken = await _authRepository.GetActiveRefreshTokenByUserIdAsync(
             user.Id,
             cancellationToken);
 
-        if (existingRefreshToken is not null)
-        {
-            existingRefreshToken.Revoke();
-        }
+        existingRefreshToken?.Revoke();
 
         await _auditService.LogAsync(
             user.Id,
@@ -203,15 +197,17 @@ public class AuthService : IAuthService
             throw new ValidationException("TermsOfService must be Accepted.");
         }
 
-        Guid userId = _currentUserService.UserId ?? throw new UnauthorizedAccessException("");
+        User? user = await _userRepository.GetByEmailAsync(
+            new Email(request.Email),
+            cancellationToken) ?? throw new NotFoundException("User not found.");
 
         UserConsent userConsentForTermOfService = new(
-            userId,
+            user.Id,
             ConsentType.TermsOfService
         );
 
         UserConsent userConsentForPrivacyPolicy = new(
-            userId,
+            user.Id,
             ConsentType.PrivacyPolicy
         );
 
@@ -259,5 +255,18 @@ public class AuthService : IAuthService
             newRefreshToken,
             newAccessTokenExpiresAt,
             newRefreshTokenExpiresAt);
+    }
+
+    public async Task UpdatePasswordAsync(
+        UpdatePasswordRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        User? user = await _userRepository.GetByEmailAsync(
+            new Email(request.Email),
+            cancellationToken) ?? throw new NotFoundException("User not found.");
+
+        user.UpdatePassword(_passwordHashing.HashPassword(request.NewPassword));
+
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
     }
 }

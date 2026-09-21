@@ -3,10 +3,11 @@ using LMSBackend.Application.DTOs.Authentication;
 using Microsoft.AspNetCore.Http;
 using LMSBackend.Application.DTOs.Users;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 
 namespace LMSBackend.API.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/v1/[controller]")]
     [ApiController]
     public class AuthController : ControllerBase
     {
@@ -17,6 +18,7 @@ namespace LMSBackend.API.Controllers
             _authService = authService;
         }
 
+        [AllowAnonymous]
         [HttpPost("register")]
         public async Task<IActionResult> Register(
             RegisterRequest request,
@@ -29,6 +31,7 @@ namespace LMSBackend.API.Controllers
             return StatusCode(StatusCodes.Status201Created);
         }
 
+        [AllowAnonymous]
         [HttpPost("login")]
         public async Task<ActionResult<UserResponse>> Login(
             LoginRequest request,
@@ -63,6 +66,7 @@ namespace LMSBackend.API.Controllers
             return Ok(result.User);
         }
 
+        [Authorize]
         [HttpPost("logout")]
         public async Task<IActionResult> Logout(
             CancellationToken cancellationToken)
@@ -76,6 +80,7 @@ namespace LMSBackend.API.Controllers
             return NoContent();
         }
 
+        [AllowAnonymous]
         [HttpPost("consent")]
         public async Task<IActionResult> Consent(
             UserConsentRequest request,
@@ -88,6 +93,7 @@ namespace LMSBackend.API.Controllers
             return NoContent();
         }
 
+        [Authorize]
         [HttpPost("refresh")]
         public async Task<ActionResult<TokenResponse>> Refresh(
             CancellationToken cancellationToken)
@@ -122,7 +128,7 @@ namespace LMSBackend.API.Controllers
                     SameSite = SameSiteMode.Strict,
                     Expires = result.RefreshTokenExpiresAt
                 });
-                
+
             return Ok();
         }
     }
