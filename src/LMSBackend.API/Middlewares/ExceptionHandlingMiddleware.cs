@@ -1,4 +1,6 @@
 using System.Diagnostics;
+using LMSBackend.Application.Exceptions;
+using LMSBackend.Domain.Exceptions;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LMSBackend.API.Middlewares;
@@ -7,16 +9,13 @@ public sealed class ExceptionHandlingMiddleware
 {
     private readonly RequestDelegate _next;
     private readonly ILogger<ExceptionHandlingMiddleware> _logger;
-    private readonly IWebHostEnvironment _env;
 
     public ExceptionHandlingMiddleware(
         RequestDelegate next,
-        ILogger<ExceptionHandlingMiddleware> logger,
-        IWebHostEnvironment env)
+        ILogger<ExceptionHandlingMiddleware> logger)
     {
         _next = next;
         _logger = logger;
-        _env = env;
     }
 
     public async Task InvokeAsync(HttpContext context)
@@ -27,70 +26,71 @@ public sealed class ExceptionHandlingMiddleware
         }
         catch (Exception exception)
         {
+            var traceId = Activity.Current?.Id ?? context.TraceIdentifier;
+
             _logger.LogError(
                 exception,
                 "Unhandled exception. TraceId: {TraceId}",
-                Activity.Current?.Id ?? context.TraceIdentifier);
+                traceId);
 
             if (context.Response.HasStarted)
             {
                 throw;
             }
 
-            await HandleExceptionAsync(context, exception);
+            await HandleExceptionAsync(context, exception, traceId);
         }
     }
 
-    private async Task HandleExceptionAsync(
+    private static async Task HandleExceptionAsync(
         HttpContext context,
-        Exception exception)
+        Exception exception,
+        string traceId)
     {
-        var (statusCode, title) = exception switch
+        var (statusCode, title, detail) = exception switch
         {
-            ValidationException =>
-                (StatusCodes.Status400BadRequest, "Validation Error"),
+            DomainValidationException ex => (
+                StatusCodes.Status400BadRequest,
+                "Validation Error",
+                ex.Message),
 
-            NotFoundException =>
-                (StatusCodes.Status404NotFound, "Not Found"),
+            ValidationException ex => (
+                StatusCodes.Status400BadRequest,
+                "Validation Error",
+                ex.Message),
 
-            ConflictException =>
-                (StatusCodes.Status409Conflict, "Conflict"),
+            UnauthorizedAccessException ex => (
+                StatusCodes.Status401Unauthorized,
+                "Unauthorized",
+                ex.Message),
 
-            _ =>
-                (StatusCodes.Status500InternalServerError, "Internal Server Error")
+            NotFoundException ex => (
+                StatusCodes.Status404NotFound,
+                "Not Found",
+                ex.Message),
+
+            ConflictException ex => (
+                StatusCodes.Status409Conflict,
+                "Conflict",
+                ex.Message),
+
+            _ => (
+                StatusCodes.Status500InternalServerError,
+                "Internal Server Error",
+                "An unexpected error occurred.")
         };
 
         var problem = new ProblemDetails
         {
             Status = statusCode,
             Title = title,
-            Detail = GetDetail(exception, statusCode),
-            Instance = context.Request.Path
+            Detail = detail
         };
 
-        problem.Extensions["traceId"] =
-            Activity.Current?.Id ?? context.TraceIdentifier;
+        problem.Extensions["traceId"] = traceId;
 
         context.Response.StatusCode = statusCode;
 
         await context.Response.WriteAsJsonAsync(problem);
-    }
-
-    private string GetDetail(Exception exception, int statusCode)
-    {
-        // Show full exception information during development.
-        if (_env.IsDevelopment())
-        {
-            return exception.ToString();
-        }
-
-        // Never expose unexpected internal errors in production.
-        if (statusCode == StatusCodes.Status500InternalServerError)
-        {
-            return "An unexpected error occurred.";
-        }
-
-        // Custom exceptions contain messages that are safe to return.
-        return exception.Message;
     }
 }

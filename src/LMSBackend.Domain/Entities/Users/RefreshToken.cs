@@ -1,3 +1,5 @@
+using LMSBackend.Domain.Exceptions;
+
 namespace LMSBackend.Domain.Entities.Users;
 
 public class RefreshToken
@@ -25,7 +27,7 @@ public class RefreshToken
     public void Revoke()
     {
         if (RevokedAt.HasValue)
-            throw new InvalidOperationException("Refresh token is already revoked.");
+            throw new DomainValidationException("Refresh token is already revoked.");
 
         IsRevoked = true;
         RevokedAt = DateTimeOffset.UtcNow;

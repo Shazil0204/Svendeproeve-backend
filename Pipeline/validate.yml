@@ -25,5 +25,4 @@ validate:
   after_script:
     - docker rm -f "$CI_CONTAINER_NAME" 2>/dev/null || true
   rules:
-    - if: '$CI_PIPELINE_SOURCE == "push"'
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'

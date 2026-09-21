@@ -1,3 +1,5 @@
+using LMSBackend.Domain.Exceptions;
+
 namespace LMSBackend.Domain.ValueObjects.Progression;
 
 public record class Progression
@@ -11,14 +13,13 @@ public record class Progression
     public Progression(int completed, int total)
     {
         if (completed < 0)
-            throw new ArgumentOutOfRangeException(nameof(completed));
+            throw new DomainValidationException("Completed activities cannot be negative.");
 
         if (total < 0)
-            throw new ArgumentOutOfRangeException(nameof(total));
+            throw new DomainValidationException("Total activities cannot be negative.");
 
         if (completed > total)
-            throw new ArgumentException(
-                "Completed activities cannot exceed total activities.");
+            throw new DomainValidationException("Completed activities cannot exceed total activities.");
 
         Completed = completed;
         Total = total;

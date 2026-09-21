@@ -1,5 +1,6 @@
 using LMSBackend.Domain.Entities.Users;
 using LMSBackend.Domain.Enums.Quizzes;
+using LMSBackend.Domain.Exceptions;
 using LMSBackend.Domain.ValueObjects.Progression;
 
 namespace LMSBackend.Domain.Entities.Quizzes;
@@ -31,7 +32,7 @@ public class QuizStudent
     public void CompleteQuiz(Percentage scorePercentage, bool passed, QuizStatus status)
     {
         if (Status != QuizStatus.Available)
-            throw new InvalidOperationException("Quiz is not available for completion.");
+            throw new DomainValidationException("Quiz is not available for completion.");
 
         ScorePercentage = scorePercentage;
         Passed = passed;

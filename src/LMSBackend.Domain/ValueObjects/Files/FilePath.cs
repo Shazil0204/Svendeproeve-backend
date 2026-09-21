@@ -1,3 +1,5 @@
+using LMSBackend.Domain.Exceptions;
+
 namespace LMSBackend.Domain.ValueObjects.Files;
 
 public record class FilePath
@@ -7,9 +9,7 @@ public record class FilePath
     public FilePath(string value)
     {
         if (string.IsNullOrWhiteSpace(value))
-            throw new ArgumentException(
-                "File path cannot be empty.",
-                nameof(value));
+            throw new DomainValidationException("File path cannot be empty.");
 
         Value = value.Trim();
     }

@@ -1,3 +1,4 @@
+using LMSBackend.Application.Abstractions.Persistence;
 using LMSBackend.Domain.Entities.Auditing;
 using LMSBackend.Domain.Entities.Groups;
 using LMSBackend.Domain.Entities.Quizzes;
@@ -9,7 +10,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace LMSBackend.Infrastructure.Data;
 
-public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
+public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options), IUnitOfWork
 {
     public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
     public DbSet<GroupMembership> GroupMemberships => Set<GroupMembership>();
