@@ -6,7 +6,7 @@ namespace LMSBackend.Application.Abstractions.Authentication;
 
 public interface IAuthService
 {
-    Task RegisterUserAsync( 
+    Task RegisterUserAsync(
         RegisterRequest request,
         CancellationToken cancellationToken = default);
 
@@ -20,4 +20,8 @@ public interface IAuthService
     Task AddUserConsentAsync(
         UserConsentRequest request,
         CancellationToken cancellationToken = default);
+
+    Task<TokenResponse> RenewRefreshTokenAsync(
+            string refreshToken,
+            CancellationToken cancellationToken = default);
 }

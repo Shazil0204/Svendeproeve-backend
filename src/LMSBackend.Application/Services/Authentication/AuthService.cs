@@ -145,11 +145,14 @@ public class AuthService : IAuthService
             user.CreatedAt,
             hasMissingConsents);
 
-        return new LoginResult(
+        TokenResponse tokenResponse = new(
             accessToken,
             refreshToken,
             accessTokenExpiresAt,
-            refreshTokenExpiresAt,
+            refreshTokenExpiresAt);
+
+        return new LoginResult(
+            tokenResponse,
             userResponse);
     }
 
@@ -201,12 +204,12 @@ public class AuthService : IAuthService
         }
 
         Guid userId = _currentUserService.UserId ?? throw new UnauthorizedAccessException("");
-        
+
         UserConsent userConsentForTermOfService = new(
             userId,
             ConsentType.TermsOfService
         );
-        
+
         UserConsent userConsentForPrivacyPolicy = new(
             userId,
             ConsentType.PrivacyPolicy
@@ -215,5 +218,46 @@ public class AuthService : IAuthService
         await _authRepository.AddUserConsentAsync(userConsentForTermOfService, cancellationToken);
         await _authRepository.AddUserConsentAsync(userConsentForPrivacyPolicy, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+    }
+
+    public async Task<TokenResponse> RenewRefreshTokenAsync(
+        string refreshToken,
+        CancellationToken cancellationToken = default)
+    {
+        RefreshToken? existingRefreshToken = await _authRepository.GetRefreshTokenByHashAsync(
+            refreshToken,
+            cancellationToken);
+
+        if (existingRefreshToken is null || existingRefreshToken.IsRevoked || existingRefreshToken.ExpiresAt <= DateTimeOffset.UtcNow)
+        {
+            throw new UnauthorizedAccessException("Invalid or expired refresh token.");
+        }
+
+        User? user = await _userRepository.GetByIdAsync(
+            existingRefreshToken.UserId,
+            cancellationToken) ?? throw new UnauthorizedAccessException("User not found.");
+
+        existingRefreshToken.Revoke();
+
+        string newAccessToken = _tokenService.GenerateAccessToken(user);
+        string newRefreshToken = _tokenService.GenerateRefreshToken();
+
+        DateTimeOffset newAccessTokenExpiresAt = _tokenService.GetAccessTokenExpiration();
+        DateTimeOffset newRefreshTokenExpiresAt = _tokenService.GetRefreshTokenExpiration();
+
+        await _authRepository.AddRefreshTokenAsync(
+            new RefreshToken(
+                user.Id,
+                newRefreshToken,
+                newRefreshTokenExpiresAt),
+            cancellationToken);
+
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        return new TokenResponse(
+            newAccessToken,
+            newRefreshToken,
+            newAccessTokenExpiresAt,
+            newRefreshTokenExpiresAt);
     }
 }

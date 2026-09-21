@@ -77,6 +77,18 @@ builder.Services
                     context.Request.Cookies["access_token"];
 
                 return Task.CompletedTask;
+            },
+
+            OnAuthenticationFailed = context =>
+            {
+                if (context.Exception is SecurityTokenExpiredException)
+                {
+                    context.Response.Headers.Append(
+                        "X-Auth-Error",
+                        "ACCESS_TOKEN_EXPIRED");
+                }
+
+                return Task.CompletedTask;
             }
         };
     });

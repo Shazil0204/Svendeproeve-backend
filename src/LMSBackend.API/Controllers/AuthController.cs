@@ -40,24 +40,24 @@ namespace LMSBackend.API.Controllers
 
             Response.Cookies.Append(
                 "access_token",
-                result.AccessToken,
+                result.TokenResponse.AccessToken,
                 new CookieOptions
                 {
                     HttpOnly = true,
                     Secure = true,
                     SameSite = SameSiteMode.Strict,
-                    Expires = result.AccessTokenExpiresAt
+                    Expires = result.TokenResponse.AccessTokenExpiresAt
                 });
 
             Response.Cookies.Append(
                 "refresh_token",
-                result.RefreshToken,
+                result.TokenResponse.RefreshToken,
                 new CookieOptions
                 {
                     HttpOnly = true,
                     Secure = true,
                     SameSite = SameSiteMode.Strict,
-                    Expires = result.RefreshTokenExpiresAt
+                    Expires = result.TokenResponse.RefreshTokenExpiresAt
                 });
 
             return Ok(result.User);
@@ -86,6 +86,44 @@ namespace LMSBackend.API.Controllers
                 cancellationToken);
 
             return NoContent();
+        }
+
+        [HttpPost("refresh")]
+        public async Task<ActionResult<TokenResponse>> Refresh(
+            CancellationToken cancellationToken)
+        {
+            string refreshToken =
+                Request.Cookies["refresh_token"]
+                ?? throw new UnauthorizedAccessException(
+                    "Refresh token is missing.");
+
+            TokenResponse result = await _authService.RenewRefreshTokenAsync(
+                refreshToken,
+                cancellationToken);
+
+            Response.Cookies.Append(
+                "access_token",
+                result.AccessToken,
+                new CookieOptions
+                {
+                    HttpOnly = true,
+                    Secure = true,
+                    SameSite = SameSiteMode.Strict,
+                    Expires = result.AccessTokenExpiresAt
+                });
+
+            Response.Cookies.Append(
+                "refresh_token",
+                result.RefreshToken,
+                new CookieOptions
+                {
+                    HttpOnly = true,
+                    Secure = true,
+                    SameSite = SameSiteMode.Strict,
+                    Expires = result.RefreshTokenExpiresAt
+                });
+                
+            return Ok();
         }
     }
 }
