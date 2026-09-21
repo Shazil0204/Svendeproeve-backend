@@ -1,3 +1,4 @@
+using LMSBackend.API.Middlewares;
 using LMSBackend.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
@@ -18,6 +19,9 @@ builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 
 WebApplication? app = builder.Build();
+
+// Catch exceptions from everything that runs after this middleware. 
+app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
