@@ -57,15 +57,6 @@ builder.Services.AddScoped<ISubjectService, SubjectService>();
 builder.Services.AddScoped<ISubjectRepository, SubjectRepository>();
 builder.Services.AddScoped<IEduGoalService, EduGoalService>();
 builder.Services.AddScoped<IEduGoalRepository, EduGoalRepository>();
-builder.Services.AddScoped<IQuizService, QuizService>();
-builder.Services.AddScoped<IQuizRepository, QuizRepository>();
-builder.Services.AddScoped<ITaskService, TaskService>();
-builder.Services.AddScoped<ITaskRepository, TaskRepository>();
-builder.Services.AddScoped<ISubmissionRepository, SubmissionRepository>();
-builder.Services.AddScoped<ISubmissionService, SubmissionService>();
-builder.Services.AddSingleton<ISubmissionFileStore>(new LocalSubmissionFileStore(
-    builder.Configuration["SubmissionStorage:RootPath"]
-        ?? Path.Combine(builder.Environment.ContentRootPath, "App_Data", "submissions")));
 
 
 string jwtSecret = Environment.GetEnvironmentVariable("JWT_SECRET")
