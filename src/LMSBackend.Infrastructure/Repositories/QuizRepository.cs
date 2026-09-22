@@ -117,10 +117,10 @@ public class QuizRepository : IQuizRepository
         await _context.QuizAnswers.AddAsync(quizAnswer);
     }
 
-    public async Task<IEnumerable<QuizAnswer>> GetStudentQuizAnswersByQuizId(Guid quizId)
+    public async Task<IEnumerable<QuizAnswer>> GetStudentQuizAnswersByQuizQuestionId(Guid quizQuestionId)
     {
         return await _context.QuizAnswers
-            .Where(qa => qa.QuizQuestion.QuizId == quizId)
+            .Where(qa => qa.QuizQuestionId == quizQuestionId)
             .ToListAsync();
     }
 
