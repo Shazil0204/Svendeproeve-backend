@@ -15,27 +15,6 @@ public sealed class AuthRepository : IAuthRepository
         _dbContext = dbContext;
     }
 
-    public async Task RegisterUserAsync(
-        User user,
-        CancellationToken cancellationToken = default)
-    {
-        await _dbContext.Users.AddAsync(user, cancellationToken);
-    }
-
-    public async Task<User> LoginUserAsync(
-        string username,
-        string password,
-        CancellationToken cancellationToken = default)
-    {
-        throw new NotImplementedException();
-    }
-
-    public async Task SoftDeleteUserAsync(
-        Guid userId, CancellationToken cancellationToken = default)
-    {
-        throw new NotImplementedException();
-    }
-
     public async Task AddUserConsentAsync(
         UserConsent consent,
         CancellationToken cancellationToken = default)

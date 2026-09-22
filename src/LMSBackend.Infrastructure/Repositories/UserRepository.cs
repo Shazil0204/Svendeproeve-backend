@@ -30,20 +30,22 @@ public class UserRepository : IUserRepository
 
     public async Task<IReadOnlyList<User>> GetAllAsync(CancellationToken cancellationToken = default)
     {
-        return await _dbContext.Users.ToListAsync(cancellationToken);
+        return await _dbContext.Users
+            .Where(user => user.Role != UserRole.Administrator && !user.IsSoftDeleted)
+            .ToListAsync(cancellationToken);
     }
 
     public async Task<User?> GetByEmailAsync(Email email, CancellationToken cancellationToken = default)
     {
         return await _dbContext.Users.FirstOrDefaultAsync(
-            user => user.Email == email,
+            user => user.Email == email && !user.IsSoftDeleted,
             cancellationToken);
     }
 
     public async Task<User?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         return await _dbContext.Users.FirstOrDefaultAsync(
-            user => user.Id == id,
+            user => user.Id == id && !user.IsSoftDeleted,
             cancellationToken);
     }
 
