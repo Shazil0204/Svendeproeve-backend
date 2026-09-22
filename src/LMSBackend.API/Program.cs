@@ -57,6 +57,9 @@ builder.Services.AddScoped<ISubjectService, SubjectService>();
 builder.Services.AddScoped<ISubjectRepository, SubjectRepository>();
 builder.Services.AddScoped<IEduGoalService, EduGoalService>();
 builder.Services.AddScoped<IEduGoalRepository, EduGoalRepository>();
+builder.Services.AddScoped<IQuizService, QuizService>();
+builder.Services.AddScoped<IQuizRepository, QuizRepository>();
+
 
 
 string jwtSecret = Environment.GetEnvironmentVariable("JWT_SECRET")
