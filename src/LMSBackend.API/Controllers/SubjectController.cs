@@ -32,7 +32,7 @@ namespace LMSBackend.API.Controllers
             {
                 return NotFound();
             }
-            return Ok(subject);
+            return CreatedAtAction(nameof(GetSubjectById), new { subjectId = subject.Id }, subject);
         }
 
         [HttpGet]
@@ -46,14 +46,14 @@ namespace LMSBackend.API.Controllers
         public async Task<IActionResult> UpdateSubject(Guid subjectId, [FromBody] UpdateSubject updateSubject)
         {
             await _subjectService.UpdateSubject(updateSubject, subjectId);
-            return StatusCode(204);
+            return NoContent();
         }
 
         [HttpDelete("{subjectId}")]
         public async Task<IActionResult> SoftDeleteSubject(Guid subjectId)
         {
             await _subjectService.SoftDeleteSubject(subjectId);
-            return StatusCode(204);
+            return NoContent();
         }
     }
 }
