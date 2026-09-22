@@ -46,11 +46,7 @@ public class SubjectService : ISubjectService
 
     public async Task UpdateSubject(UpdateSubject updateSubject, Guid subjectId)
     {
-        SubjectResponseDTO? subject = await GetSubjectById(subjectId);
-        if (subject == null)
-        {
-            throw new NotFoundException("Subject not found");
-        }
+        SubjectResponseDTO? subject = await GetSubjectById(subjectId) ?? throw new NotFoundException("Subject not found");
         Subject subjectToUpdate = await _subjectRepository.GetSubjectById(subjectId) ?? throw new NotFoundException("Subject not found");
         subjectToUpdate.UpdateName(updateSubject.Name);
         await _unitOfWork.SaveChangesAsync();
@@ -58,11 +54,7 @@ public class SubjectService : ISubjectService
 
     public async Task SoftDeleteSubject(Guid subjectId)
     {
-        SubjectResponseDTO? subject = await GetSubjectById(subjectId);
-        if (subject == null)
-        {
-            throw new NotFoundException("Subject not found");
-        }
+        SubjectResponseDTO? subject = await GetSubjectById(subjectId) ?? throw new NotFoundException("Subject not found");
         Subject subjectToDelete = await _subjectRepository.GetSubjectById(subjectId) ?? throw new NotFoundException("Subject not found");
         subjectToDelete.SoftDelete();
         await _unitOfWork.SaveChangesAsync();

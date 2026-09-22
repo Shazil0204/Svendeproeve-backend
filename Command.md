@@ -70,3 +70,29 @@ sudo usermod -aG docker gitlab-runner
 sudo systemctl restart gitlab-runner
 sudo -u gitlab-runner -H docker ps
 ```
+
+## Different Endpoint Access Control
+Let Student & Teacher
+```
+[Authorize(Roles = $"{nameof(UserRole.Student)},{nameof(UserRole.Teacher)}")]
+```
+
+Let Administrator
+```
+[Authorize(Roles = nameof(UserRole.Administrator))]
+```
+
+Let Teacher
+```
+[Authorize(Roles = nameof(UserRole.Teacher))]
+```
+
+Let Anyone
+```
+[AllowAnonymous]
+```
+
+Let Only Authorized one
+```
+[Authorize]
+```
