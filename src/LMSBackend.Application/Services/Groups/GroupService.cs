@@ -72,14 +72,13 @@ public sealed class GroupService : IGroupService
         return new GroupDto(group.Id, group.Name, group.CreatedAt);
     }
 
-    public async Task RenameAsync(Guid id, string name, CancellationToken cancellationToken)
+    public async Task<GroupDto> RenameAsync(Guid id, string name, CancellationToken cancellationToken)
     {
         Guid userId = _currentUserService.UserId ?? throw new UnauthorizedAccessException("User is not authenticated.");
         StudentGroup group = await FindAsync(id, cancellationToken);
         name = ValidateName(name);
         await CheckNameAsync(name, id, cancellationToken);
         group.UpdateName(name);
-        await _repository.UpdateAsync(group, cancellationToken);
         await _auditService.LogAsync(
             userId,
             AuditAction.Updated,
@@ -88,6 +87,7 @@ public sealed class GroupService : IGroupService
             group.Id,
             cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+        return new GroupDto(group.Id, group.Name, group.CreatedAt);
     }
 
     public async Task DeleteAsync(Guid id, CancellationToken cancellationToken)
@@ -95,7 +95,6 @@ public sealed class GroupService : IGroupService
         Guid userId = _currentUserService.UserId ?? throw new UnauthorizedAccessException("User is not authenticated.");
         StudentGroup group = await FindAsync(id, cancellationToken);
         group.SoftDelete();
-        await _repository.UpdateAsync(group, cancellationToken);
         await _auditService.LogAsync(
             userId,
             AuditAction.Deleted,

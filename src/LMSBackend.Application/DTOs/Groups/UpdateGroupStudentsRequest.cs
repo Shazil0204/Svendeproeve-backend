@@ -1,6 +1,6 @@
 namespace LMSBackend.Application.DTOs.Groups;
 
-public sealed class GroupStudentsRequest
+public sealed record UpdateGroupStudentsRequest
 {
     public Guid[] StudentIds { get; init; } = [];
 }
