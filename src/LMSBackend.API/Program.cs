@@ -6,6 +6,7 @@ using LMSBackend.Application.Abstractions.Authentication;
 using LMSBackend.Application.Abstractions.EducationalGoals;
 using LMSBackend.Application.Abstractions.Groups;
 using LMSBackend.Application.Abstractions.Persistence;
+using LMSBackend.Application.Abstractions.Quizzes;
 using LMSBackend.Application.Abstractions.Repositories;
 using LMSBackend.Application.Abstractions.Subjects;
 using LMSBackend.Application.Abstractions.Users;
@@ -13,6 +14,7 @@ using LMSBackend.Application.Services.Auditing;
 using LMSBackend.Application.Services.Authentication;
 using LMSBackend.Application.Services.EducationalGoals;
 using LMSBackend.Application.Services.Groups;
+using LMSBackend.Application.Services.Quizzes;
 using LMSBackend.Application.Services.Subjects;
 using LMSBackend.Application.Services.Users;
 using LMSBackend.Infrastructure.Auditing;
@@ -50,6 +52,9 @@ builder.Services.AddScoped<ISubjectService, SubjectService>();
 builder.Services.AddScoped<ISubjectRepository, SubjectRepository>();
 builder.Services.AddScoped<IEduGoalService, EduGoalService>();
 builder.Services.AddScoped<IEduGoalRepository, EduGoalRepository>();
+builder.Services.AddScoped<IQuizService, QuizService>();
+builder.Services.AddScoped<IQuizRepository, QuizRepository>();
+
 
 
 string jwtSecret = Environment.GetEnvironmentVariable("JWT_SECRET")
