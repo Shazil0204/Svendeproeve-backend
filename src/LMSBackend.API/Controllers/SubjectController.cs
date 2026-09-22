@@ -1,6 +1,5 @@
 using LMSBackend.Application.Abstractions.Subjects;
 using LMSBackend.Application.DTOs.Subjects;
-using LMSBackend.Domain.Entities.Subjects;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 

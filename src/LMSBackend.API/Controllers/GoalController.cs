@@ -1,13 +1,12 @@
 using LMSBackend.Application.Abstractions.EducationalGoals;
 using LMSBackend.Application.DTOs.EducationalGoals;
 using LMSBackend.Application.Services.EducationalGoals;
-using LMSBackend.Domain.Entities.Subjects;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LMSBackend.API.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/v1/[controller]")]
     [ApiController]
     public class GoalController : ControllerBase
     {
@@ -43,7 +42,7 @@ namespace LMSBackend.API.Controllers
             return StatusCode(201);
         }
 
-        [HttpPut("{id}")]
+        [HttpPatch("{id}")]
         public async Task<IActionResult> UpdateEduGoalContent(Guid id, [FromBody] UpdateEduGoalRequest updateRequest)
         {
             await _eduGoalService.UpdateEduGoalUpdateContent(id, updateRequest);
