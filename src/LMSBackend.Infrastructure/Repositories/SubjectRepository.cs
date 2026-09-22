@@ -21,11 +21,14 @@ public class SubjectRepository : ISubjectRepository
 
     public async Task<Subject?> GetSubjectById(Guid subjectId)
     {
-        return await _context.Subjects.FindAsync(subjectId);
+        return await _context.Subjects.FirstOrDefaultAsync(subject =>
+            subject.Id == subjectId && !subject.IsSoftDeleted);
     }
 
     public async Task<IEnumerable<Subject>> GetAllSubjects()
     {
-        return await _context.Subjects.ToListAsync();
+        return await _context.Subjects
+        .Where(subject => !subject.IsSoftDeleted)
+        .ToListAsync();
     }
 }
