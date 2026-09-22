@@ -35,11 +35,6 @@ public sealed class GroupRepository : IGroupRepository
         _context.StudentGroups.Add(group);
     }
 
-    public async Task UpdateAsync(StudentGroup group, CancellationToken cancellationToken)
-    {
-        _context.StudentGroups.Update(group);
-    }
-
     public async Task<IReadOnlyList<GroupMembership>> GetMembershipsAsync(Guid groupId, CancellationToken cancellationToken) =>
         await _context.GroupMemberships.AsNoTracking().Include(m => m.Student)
             .Where(m => m.GroupId == groupId && !m.Student.IsSoftDeleted)
