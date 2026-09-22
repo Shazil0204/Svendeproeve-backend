@@ -28,6 +28,7 @@ public class Subject
 
     public void SoftDelete()
     {
+        Name = $"Deleted-{Name}";
         IsSoftDeleted = true;
         DeletedAt = DateTimeOffset.UtcNow;
     }

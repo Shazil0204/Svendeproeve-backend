@@ -6,10 +6,12 @@ using LMSBackend.Application.Abstractions.Authentication;
 using LMSBackend.Application.Abstractions.Groups;
 using LMSBackend.Application.Abstractions.Persistence;
 using LMSBackend.Application.Abstractions.Repositories;
+using LMSBackend.Application.Abstractions.Subjects;
 using LMSBackend.Application.Abstractions.Users;
 using LMSBackend.Application.Services.Auditing;
 using LMSBackend.Application.Services.Authentication;
 using LMSBackend.Application.Services.Groups;
+using LMSBackend.Application.Services.Subjects;
 using LMSBackend.Application.Services.Users;
 using LMSBackend.Infrastructure.Auditing;
 using LMSBackend.Infrastructure.Authentication;
@@ -42,6 +44,8 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IGroupRepository, GroupRepository>();
 builder.Services.AddScoped<IGroupService, GroupService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddScoped<ISubjectService, SubjectService>();
+builder.Services.AddScoped<ISubjectRepository, SubjectRepository>();
 
 string jwtSecret = Environment.GetEnvironmentVariable("JWT_SECRET")
     ?? throw new InvalidOperationException(

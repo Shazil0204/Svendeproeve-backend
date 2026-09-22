@@ -10,6 +10,7 @@ public sealed class SubjectConfiguration : IEntityTypeConfiguration<Subject>
     {
         builder.HasKey(subject => subject.Id);
         builder.Property(subject => subject.Name).HasMaxLength(200).IsRequired();
+        builder.HasIndex(subject => subject.Name).IsUnique();
         builder.HasOne(subject => subject.User)
             .WithMany()
             .HasForeignKey(subject => subject.CreatedBy)
