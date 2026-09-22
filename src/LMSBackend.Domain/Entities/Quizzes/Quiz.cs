@@ -52,6 +52,8 @@ public class Quiz
         if (IsSoftDeleted)
             throw new DomainValidationException("Quiz is already soft deleted.");
 
+        Title = $"[DELETED] {Title}";
+        Description = $"[DELETED Description]";
         IsSoftDeleted = true;
         DeletedAt = DateTimeOffset.UtcNow;
     }
