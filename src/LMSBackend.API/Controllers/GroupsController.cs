@@ -1,7 +1,6 @@
 using System.Security.Claims;
 using LMSBackend.Application.Abstractions.Groups;
 using LMSBackend.Application.DTOs.Groups;
-using LMSBackend.Application.Exceptions;
 using LMSBackend.Domain.Enums.Users;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -43,18 +42,18 @@ public class GroupsController : ControllerBase
 
     [HttpPost]
     [Authorize(Roles = nameof(UserRole.Teacher))]
-    public async Task<IActionResult> Create(GroupNameRequest request, CancellationToken cancellationToken)
+    public async Task<IActionResult> Create(GroupRequest request, CancellationToken cancellationToken)
     {
         GroupDto group = await _groups.CreateAsync(request.Name, cancellationToken);
         return CreatedAtAction(nameof(Get), new { id = group.Id }, group);
     }
 
-    [HttpPut("{id:guid}")]
+    [HttpPatch("{id:guid}")]
     [Authorize(Roles = nameof(UserRole.Teacher))]
-    public async Task<IActionResult> Rename(Guid id, GroupNameRequest request, CancellationToken cancellationToken)
+    public async Task<ActionResult<GroupDto>> Rename(Guid id, UpdateGroupNameRequest request, CancellationToken cancellationToken)
     {
-        await _groups.RenameAsync(id, request.Name, cancellationToken);
-        return NoContent();
+        GroupDto group = await _groups.RenameAsync(id, request.Name, cancellationToken);
+        return Ok(group);
     }
 
     [HttpDelete("{id:guid}")]
@@ -67,7 +66,7 @@ public class GroupsController : ControllerBase
 
     [HttpPost("{id:guid}/members")]
     [Authorize(Roles = nameof(UserRole.Teacher))]
-    public async Task<IActionResult> AddStudents(Guid id, [FromBody] GroupStudentsRequest request, CancellationToken cancellationToken)
+    public async Task<IActionResult> AddStudents(Guid id, [FromBody] UpdateGroupStudentsRequest request, CancellationToken cancellationToken)
     {
         await _groups.AddStudentsAsync(id, request.StudentIds, cancellationToken);
         return NoContent();
@@ -75,7 +74,7 @@ public class GroupsController : ControllerBase
 
     [HttpDelete("{id:guid}/members")]
     [Authorize(Roles = nameof(UserRole.Teacher))]
-    public async Task<IActionResult> RemoveStudents(Guid id, [FromBody] GroupStudentsRequest request, CancellationToken cancellationToken)
+    public async Task<IActionResult> RemoveStudents(Guid id, [FromBody] UpdateGroupStudentsRequest request, CancellationToken cancellationToken)
     {
         await _groups.RemoveStudentsAsync(id, request.StudentIds, cancellationToken);
         return NoContent();
