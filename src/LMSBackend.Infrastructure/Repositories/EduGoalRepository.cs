@@ -31,6 +31,10 @@ public class EduGoalRepository : IEduGoalRepository
 
     public async Task DeleteEduGoal(EducationalGoal eduGoal)
     {
+        // Stage both removals so the unit of work saves them atomically.
+        var links = await _context.TaskEducationalGoals
+            .Where(link => link.EducationalGoalId == eduGoal.Id).ToListAsync();
+        _context.TaskEducationalGoals.RemoveRange(links);
         _context.EducationalGoals.Remove(eduGoal);
     }
 }

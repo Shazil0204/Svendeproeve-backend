@@ -9,7 +9,7 @@ public record class AssignmentTarget
 
     public AssignmentTarget(Guid? taskStudentId, Guid? taskGroupId)
     {
-        if (taskStudentId is null && taskGroupId is null)
+        if (taskStudentId.HasValue == taskGroupId.HasValue || taskStudentId == Guid.Empty || taskGroupId == Guid.Empty)
             throw new DomainValidationException("An assignment target must reference either a student or group assignment.");
 
         TaskStudentId = taskStudentId;
