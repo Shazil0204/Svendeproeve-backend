@@ -30,6 +30,11 @@ public class Task
         CreatedAt = DateTimeOffset.UtcNow;
     }
 
+    public void ChangeSubject(Guid subjectId)
+    {
+        SubjectId = subjectId;
+    }
+
     public void UpdateDetails(string title, string description, DateTimeOffset? deadline)
     {
         Title = title;

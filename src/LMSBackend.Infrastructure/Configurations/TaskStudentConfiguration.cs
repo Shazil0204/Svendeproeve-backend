@@ -9,7 +9,7 @@ public sealed class TaskStudentConfiguration : IEntityTypeConfiguration<TaskStud
     public void Configure(EntityTypeBuilder<TaskStudent> builder)
     {
         builder.HasKey(assignment => assignment.Id);
-        builder.Property(assignment => assignment.Status).HasConversion<string>().HasMaxLength(32).IsRequired();
+        builder.Property(assignment => assignment.Status).HasConversion<string>().HasMaxLength(32).IsRequired().IsConcurrencyToken();
         builder.HasIndex(assignment => new { assignment.TaskId, assignment.StudentId }).IsUnique();
         builder.HasOne(assignment => assignment.Task)
             .WithMany()

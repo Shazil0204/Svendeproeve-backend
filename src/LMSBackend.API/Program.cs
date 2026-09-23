@@ -1,4 +1,7 @@
 using System.Text;
+using LMSBackend.Application.Abstractions.Submissions;
+using LMSBackend.Application.Services.Submissions;
+using LMSBackend.Infrastructure.Storage;
 using LMSBackend.API.Middlewares;
 using LMSBackend.API.Services;
 using LMSBackend.Application.Abstractions.AuditLog;
@@ -8,12 +11,14 @@ using LMSBackend.Application.Abstractions.Groups;
 using LMSBackend.Application.Abstractions.Persistence;
 using LMSBackend.Application.Abstractions.Repositories;
 using LMSBackend.Application.Abstractions.Subjects;
+using LMSBackend.Application.Abstractions.Tasks;
 using LMSBackend.Application.Abstractions.Users;
 using LMSBackend.Application.Services.Auditing;
 using LMSBackend.Application.Services.Authentication;
 using LMSBackend.Application.Services.EducationalGoals;
 using LMSBackend.Application.Services.Groups;
 using LMSBackend.Application.Services.Subjects;
+using LMSBackend.Application.Services.Tasks;
 using LMSBackend.Application.Services.Users;
 using LMSBackend.Infrastructure.Auditing;
 using LMSBackend.Infrastructure.Authentication;
@@ -50,6 +55,13 @@ builder.Services.AddScoped<ISubjectService, SubjectService>();
 builder.Services.AddScoped<ISubjectRepository, SubjectRepository>();
 builder.Services.AddScoped<IEduGoalService, EduGoalService>();
 builder.Services.AddScoped<IEduGoalRepository, EduGoalRepository>();
+builder.Services.AddScoped<ITaskService, TaskService>();
+builder.Services.AddScoped<ITaskRepository, TaskRepository>();
+builder.Services.AddScoped<ISubmissionRepository, SubmissionRepository>();
+builder.Services.AddScoped<ISubmissionService, SubmissionService>();
+builder.Services.AddSingleton<ISubmissionFileStore>(new LocalSubmissionFileStore(
+    builder.Configuration["SubmissionStorage:RootPath"]
+        ?? Path.Combine(builder.Environment.ContentRootPath, "App_Data", "submissions")));
 
 
 string jwtSecret = Environment.GetEnvironmentVariable("JWT_SECRET")

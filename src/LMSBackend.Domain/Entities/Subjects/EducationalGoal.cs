@@ -1,6 +1,6 @@
 namespace LMSBackend.Domain.Entities.Subjects;
 
-public class EducationalGoal // TODO:When Deleting we have to make sure that all of the educational goals ids are deleted from taskeducationalgoals table
+public class EducationalGoal
 {
     public Guid Id { get; private set; }
     public Guid SubjectId { get; private set; }
