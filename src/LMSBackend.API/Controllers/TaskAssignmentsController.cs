@@ -45,8 +45,7 @@ public sealed class TaskAssignmentsController : ControllerBase
     [HttpPost("{assignmentId:guid}/submission")]
     [Authorize(Roles = nameof(UserRole.Student))]
     [Consumes("multipart/form-data")]
-    [RequestSizeLimit(ISubmissionFileStore.MaxFileBytes + 65536)]
-    [RequestFormLimits(MultipartBodyLengthLimit = ISubmissionFileStore.MaxFileBytes + 65536)]
+    [ServiceFilter(typeof(LMSBackend.API.Filters.SubmissionUploadLimitsFilter))]
     public async Task<ActionResult<SubmissionDto>> Submit(Guid assignmentId, [FromForm] SubmitTaskRequest request,
         CancellationToken cancellationToken)
     {

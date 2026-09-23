@@ -63,9 +63,17 @@ builder.Services.AddScoped<ITaskService, TaskService>();
 builder.Services.AddScoped<ITaskRepository, TaskRepository>();
 builder.Services.AddScoped<ISubmissionRepository, SubmissionRepository>();
 builder.Services.AddScoped<ISubmissionService, SubmissionService>();
+
+long maxSubmissionFileBytes = builder.Configuration.GetValue<long?>("SubmissionStorage:MaxFileBytes")
+    ?? throw new InvalidOperationException("SubmissionStorage__MaxFileBytes is not configured.");
+if (maxSubmissionFileBytes <= 0 || maxSubmissionFileBytes > int.MaxValue)
+    throw new InvalidOperationException("SubmissionStorage__MaxFileBytes must be between 1 and 2147418111 bytes.");
+
 builder.Services.AddSingleton<ISubmissionFileStore>(new LocalSubmissionFileStore(
-    builder.Configuration["SubmissionStorage: RootPath"]
-        ?? Path.Combine(builder.Environment.ContentRootPath, "App_Data", "submissions")));
+    builder.Configuration["SubmissionStorage:RootPath"]
+        ?? Path.Combine(builder.Environment.ContentRootPath, "App_Data", "submissions"),
+    maxSubmissionFileBytes));
+builder.Services.AddScoped<LMSBackend.API.Filters.SubmissionUploadLimitsFilter>();
 
 string jwtSecret = Environment.GetEnvironmentVariable("JWT_SECRET")
     ?? throw new InvalidOperationException(

@@ -7,7 +7,14 @@ namespace LMSBackend.Infrastructure.Storage;
 public sealed class LocalSubmissionFileStore : ISubmissionFileStore
 {
     private readonly string _root;
-    public LocalSubmissionFileStore(string root) => _root = Path.GetFullPath(root);
+    public long MaxFileBytes { get; }
+
+    public LocalSubmissionFileStore(string root, long maxFileBytes)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(maxFileBytes);
+        _root = Path.GetFullPath(root);
+        MaxFileBytes = maxFileBytes;
+    }
 
     public async Task<string> SaveZipAsync(Stream content, string fileName, CancellationToken cancellationToken)
     {
@@ -19,8 +26,8 @@ public sealed class LocalSubmissionFileStore : ISubmissionFileStore
         int read;
         while ((read = await content.ReadAsync(chunk, cancellationToken)) != 0)
         {
-            if (buffer.Length + read > ISubmissionFileStore.MaxFileBytes)
-                throw new ValidationException("The ZIP file cannot exceed 20 MiB.");
+            if (buffer.Length + read > MaxFileBytes)
+                throw new ValidationException($"The ZIP file cannot exceed {MaxFileBytes} bytes.");
             await buffer.WriteAsync(chunk.AsMemory(0, read), cancellationToken);
         }
         buffer.Position = 0;
@@ -80,4 +87,3 @@ public sealed class LocalSubmissionFileStore : ISubmissionFileStore
         return Path.Combine(_root, key);
     }
 }
-
