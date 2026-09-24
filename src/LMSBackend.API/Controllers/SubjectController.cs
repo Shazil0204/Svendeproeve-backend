@@ -1,5 +1,6 @@
 using LMSBackend.Application.Abstractions.Subjects;
 using LMSBackend.Application.DTOs.Subjects;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -16,6 +17,7 @@ namespace LMSBackend.API.Controllers
             _subjectService = subjectService;
         }
 
+        [Authorize(Roles = "Teacher")]
         [HttpPost]
         public async Task<IActionResult> AddSubject([FromBody] CreateSubject createSubject)
         {
@@ -23,6 +25,7 @@ namespace LMSBackend.API.Controllers
             return StatusCode(201);
         }
 
+        [Authorize(Roles = "Teacher")]
         [HttpGet("{subjectId}")]
         public async Task<IActionResult> GetSubjectById(Guid subjectId)
         {
@@ -34,6 +37,7 @@ namespace LMSBackend.API.Controllers
             return CreatedAtAction(nameof(GetSubjectById), new { subjectId = subject.Id }, subject);
         }
 
+        [Authorize(Roles = "Teacher")]
         [HttpGet]
         public async Task<IActionResult> GetAllSubjects()
         {
@@ -41,6 +45,7 @@ namespace LMSBackend.API.Controllers
             return Ok(subjects);
         }
 
+        [Authorize(Roles = "Teacher")]
         [HttpPut("{subjectId}")]
         public async Task<IActionResult> UpdateSubject(Guid subjectId, [FromBody] UpdateSubject updateSubject)
         {
@@ -48,6 +53,7 @@ namespace LMSBackend.API.Controllers
             return NoContent();
         }
 
+        [Authorize(Roles = "Teacher")]
         [HttpDelete("{subjectId}")]
         public async Task<IActionResult> SoftDeleteSubject(Guid subjectId)
         {

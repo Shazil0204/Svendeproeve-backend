@@ -1,6 +1,7 @@
 using LMSBackend.Application.Abstractions.EducationalGoals;
 using LMSBackend.Application.DTOs.EducationalGoals;
 using LMSBackend.Application.Services.EducationalGoals;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -17,6 +18,7 @@ namespace LMSBackend.API.Controllers
             _eduGoalService = eduGoalService;
         }
 
+        [Authorize(Roles = "Teacher")]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetEduGoalById(Guid id)
         {
@@ -28,13 +30,23 @@ namespace LMSBackend.API.Controllers
             return Ok(eduGoal);
         }
 
-        [HttpGet]
-        public async Task<IActionResult> GetAllEduGoals()
+        [Authorize(Roles = "Teacher, Student")]
+        [HttpGet("subjectid/{subjectId}")]
+        public async Task<IActionResult> GetEduGoalsBySubjectId(Guid subjectId)
         {
-            var eduGoals = await _eduGoalService.GetAllEduGoals();
+            List<EduGoalResponse> eduGoals = await _eduGoalService.GetEduGoalsBySubjectId(subjectId);
             return Ok(eduGoals);
         }
 
+        [Authorize(Roles = "Teacher")]
+        [HttpGet]
+        public async Task<IActionResult> GetAllEduGoals()
+        {
+            IEnumerable<EduGoalResponse>? eduGoals = await _eduGoalService.GetAllEduGoals();
+            return Ok(eduGoals);
+        }
+
+        [Authorize(Roles = "Teacher")]
         [HttpPost]
         public async Task<IActionResult> AddEduGoal([FromBody] CreateEduGoalRequest eduGoal)
         {
@@ -42,6 +54,7 @@ namespace LMSBackend.API.Controllers
             return StatusCode(201);
         }
 
+        [Authorize(Roles = "Teacher")]
         [HttpPatch("{id}")]
         public async Task<IActionResult> UpdateEduGoalContent(Guid id, [FromBody] UpdateEduGoalRequest updateRequest)
         {
@@ -49,6 +62,7 @@ namespace LMSBackend.API.Controllers
             return NoContent();
         }
 
+        [Authorize(Roles = "Teacher")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteEduGoal(Guid id)
         {

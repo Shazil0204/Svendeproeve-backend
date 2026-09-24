@@ -37,6 +37,15 @@ public class EduGoalService : IEduGoalService
         return new EduGoalResponse(eduGoal.Id, eduGoal.SubjectId, eduGoal.Content);
     }
 
+    public async Task<List<EduGoalResponse>> GetEduGoalsBySubjectId(Guid subjectId)
+    {
+        Subject? subject = await _subjectRepository.GetSubjectById(subjectId);
+        if (subject is null || subject.IsSoftDeleted)
+            throw new NotFoundException("Subject not found");
+        List<EducationalGoal> eduGoals = await _eduGoalRepository.GetEduGoalsBySubjectId(subjectId);
+        return eduGoals.Select(eduGoal => new EduGoalResponse(eduGoal.Id, eduGoal.SubjectId, eduGoal.Content)).ToList();
+    }
+
     public async Task<IEnumerable<EduGoalResponse>> GetAllEduGoals()
     {
         IEnumerable<EducationalGoal> eduGoals = await _eduGoalRepository.GetAllEduGoals();
