@@ -6,6 +6,7 @@ public interface IEduGoalRepository
 {
     Task AddEduGoal(EducationalGoal eduGoal);
     Task<EducationalGoal?> GetEduGoalById(Guid eduGoalId);
+    Task<List<EducationalGoal>> GetEduGoalsBySubjectId(Guid subjectId);
     Task<IEnumerable<EducationalGoal>> GetAllEduGoals();
     Task DeleteEduGoal(EducationalGoal eduGoal);
 }

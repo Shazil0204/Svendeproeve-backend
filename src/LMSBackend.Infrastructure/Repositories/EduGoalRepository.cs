@@ -24,6 +24,13 @@ public class EduGoalRepository : IEduGoalRepository
         return await _context.EducationalGoals.FindAsync(eduGoalId);
     }
 
+    public async Task<List<EducationalGoal>> GetEduGoalsBySubjectId(Guid subjectId)
+    {
+        return await _context.EducationalGoals
+            .Where(eduGoal => eduGoal.SubjectId == subjectId)
+            .ToListAsync();
+    }
+
     public async Task<IEnumerable<EducationalGoal>> GetAllEduGoals()
     {
         return await _context.EducationalGoals.ToListAsync();
