@@ -62,6 +62,7 @@ builder.Services.AddCors(options =>
 builder.Services.AddHttpContextAccessor();
 
 // Dependencies Injection
+builder.Services.AddHealthChecks();
 builder.Services.AddScoped<IUnitOfWork>(serviceProvider => serviceProvider.GetRequiredService<AppDbContext>());
 builder.Services.AddScoped<AuditSaveChangesInterceptor>();
 builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
@@ -70,6 +71,7 @@ builder.Services.AddScoped<IAuditService, AuditService>();
 builder.Services.AddScoped<IAuthRepository, AuthRepository>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IPasswordHashing, PasswordHashing>();
+builder.Services.AddScoped<DatabaseInitializer>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IGroupRepository, GroupRepository>();
@@ -176,6 +178,20 @@ builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 
 WebApplication? app = builder.Build();
+
+if (args.Contains("--initialize-database"))
+{
+    await using var scope = app.Services.CreateAsyncScope();
+
+    var initializer =
+        scope.ServiceProvider.GetRequiredService<DatabaseInitializer>();
+
+    await initializer.InitializeAsync();
+
+    return;
+}
+
+app.MapHealthChecks("/health");
 
 // Catch exceptions from everything that runs after this middleware. 
 app.UseMiddleware<ExceptionHandlingMiddleware>();

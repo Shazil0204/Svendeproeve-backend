@@ -1,0 +1,33 @@
+# Build stage
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+WORKDIR /src
+
+# Copy project files first for better Docker layer caching
+COPY src/LMSBackend.API/LMSBackend.API.csproj src/LMSBackend.API/
+COPY src/LMSBackend.Application/LMSBackend.Application.csproj src/LMSBackend.Application/
+COPY src/LMSBackend.Domain/LMSBackend.Domain.csproj src/LMSBackend.Domain/
+COPY src/LMSBackend.Infrastructure/LMSBackend.Infrastructure.csproj src/LMSBackend.Infrastructure/
+
+# Restore dependencies
+RUN dotnet restore src/LMSBackend.API/LMSBackend.API.csproj
+
+# Copy source code
+COPY src/ src/
+
+# Publish
+RUN dotnet publish src/LMSBackend.API/LMSBackend.API.csproj \
+    --configuration Release \
+    --no-restore \
+    --output /app/publish
+
+# Runtime stage
+FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
+WORKDIR /app
+
+COPY --from=build /app/publish .
+
+EXPOSE 8080
+
+ENV ASPNETCORE_URLS=http://+:8080
+
+ENTRYPOINT ["dotnet", "LMSBackend.API.dll"]

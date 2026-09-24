@@ -1,0 +1,262 @@
+staging-build:
+  stage: staging-build
+  tags:
+    - backend
+
+  variables:
+    STAGING_IMAGE: "lmsbackend-staging:$CI_COMMIT_SHORT_SHA"
+
+  script:
+    - echo "Building staging candidate $STAGING_IMAGE"
+
+    - docker build
+        --file Docker/Dockerfile.backend
+        --tag "$STAGING_IMAGE"
+        .
+
+    - docker image inspect "$STAGING_IMAGE" > /dev/null
+
+    - echo "Candidate image built successfully $STAGING_IMAGE"
+
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "staging-developer" && $CI_PIPELINE_SOURCE == "push"'
+
+
+staging-database:
+  stage: staging-database
+  tags:
+    - backend
+
+  variables:
+    STAGING_IMAGE: "lmsbackend-staging:$CI_COMMIT_SHORT_SHA"
+
+  script:
+    - echo "Starting staging PostgreSQL database"
+
+    - docker compose
+        -f Docker/docker-compose.staging.yaml
+        up
+        --detach
+        --build
+        --wait
+        database
+
+    - echo "Staging PostgreSQL database is healthy"
+
+    - echo "Initializing staging database"
+
+    - docker compose
+        -f Docker/docker-compose.staging.yaml
+        run
+        --rm
+        --no-deps
+        backend
+        --initialize-database
+
+    - echo "Staging database initialized successfully"
+
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "staging-developer" && $CI_PIPELINE_SOURCE == "push"'
+
+
+staging-deploy:
+  stage: staging-deploy
+  tags:
+    - backend
+
+  variables:
+    STAGING_IMAGE: "lmsbackend-staging:$CI_COMMIT_SHORT_SHA"
+
+  script:
+    - echo "Recording currently deployed staging image"
+
+    - |
+      PREVIOUS_IMAGE="$(docker inspect \
+        --format='{{.Config.Image}}' \
+        lms-staging-backend 2>/dev/null || true)"
+
+      if [ -n "$PREVIOUS_IMAGE" ]; then
+        echo "Currently deployed image: $PREVIOUS_IMAGE"
+      else
+        echo "No existing staging backend found"
+      fi
+
+      printf 'PREVIOUS_IMAGE=%s\n' "$PREVIOUS_IMAGE" > staging.env
+
+    - echo "Starting staging backend $STAGING_IMAGE"
+
+    - docker compose
+        -f Docker/docker-compose.staging.yaml
+        up
+        --detach
+        --no-build
+        backend
+
+    - echo "Staging backend container started"
+
+  artifacts:
+    reports:
+      dotenv: staging.env
+    expire_in: 1 hour
+
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "staging-developer" && $CI_PIPELINE_SOURCE == "push"'
+
+
+staging-verify:
+  stage: staging-verify
+  tags:
+    - backend
+
+  variables:
+    STAGING_IMAGE: "lmsbackend-staging:$CI_COMMIT_SHORT_SHA"
+
+  script:
+    - echo "Waiting for staging backend health check"
+
+    - |
+      healthy=false
+
+      for attempt in $(seq 1 12); do
+        if curl --fail --silent \
+          -H "Host: $NGINX_SERVER_NAME" \
+          http://100.106.123.103/health > /dev/null; then
+          echo "Staging backend is healthy"
+          healthy=true
+          break
+        fi
+
+        echo "Backend not healthy yet ($attempt/12)"
+        sleep 5
+      done
+
+      if [ "$healthy" != "true" ]; then
+        echo "New staging backend failed health check"
+        docker logs --tail 100 lms-staging-backend || true
+
+        if [ -n "$PREVIOUS_IMAGE" ]; then
+          echo "Rolling back to $PREVIOUS_IMAGE"
+
+          STAGING_IMAGE="$PREVIOUS_IMAGE" docker compose \
+            -f Docker/docker-compose.staging.yaml \
+            up \
+            --detach \
+            --no-build \
+            --force-recreate \
+            backend
+
+          echo "Rollback container started"
+
+          echo "Verifying rollback health"
+
+          rollback_healthy=false
+
+          for attempt in $(seq 1 12); do
+            if curl --fail --silent \
+              -H "Host: $NGINX_SERVER_NAME" \
+              http://100.106.123.103/health > /dev/null; then
+              echo "Rollback successful - previous backend is healthy"
+              rollback_healthy=true
+              break
+            fi
+
+            echo "Rollback not healthy yet ($attempt/12)"
+            sleep 5
+          done
+
+          if [ "$rollback_healthy" != "true" ]; then
+            echo "CRITICAL: Rollback backend also failed health check"
+            docker logs --tail 100 lms-staging-backend || true
+          fi
+        else
+          echo "No previous staging image exists - rollback is not possible"
+        fi
+
+        exit 1
+      fi
+
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "staging-developer" && $CI_PIPELINE_SOURCE == "push"'
+
+
+staging-configure:
+  stage: staging-configure
+  tags:
+    - backend
+
+  script:
+    - echo "Ensuring Nginx is connected to the staging network"
+
+    - |
+      if ! docker network inspect lms-staging-network \
+        --format '{{range .Containers}}{{.Name}} {{end}}' | grep -qw nginx; then
+        docker network connect lms-staging-network nginx
+        echo "Nginx connected to lms-staging-network"
+      else
+        echo "Nginx is already connected to lms-staging-network"
+      fi
+
+    - echo "Rendering staging Nginx configuration"
+
+    - |
+      docker run --rm \
+        -e NGINX_SERVER_NAME \
+        -e NGINX_BACKEND_HOST \
+        -e NGINX_BACKEND_PORT \
+        -v "$CI_PROJECT_DIR/Docker/nginx/lms-staging.conf.template:/template.conf:ro" \
+        -v "$CI_PROJECT_DIR/Docker/nginx:/output" \
+        alpine:3.22 \
+        sh -c '
+          apk add --no-cache gettext > /dev/null &&
+          envsubst \
+            "\${NGINX_SERVER_NAME} \${NGINX_BACKEND_HOST} \${NGINX_BACKEND_PORT}" \
+            < /template.conf \
+            > /output/lms-staging.conf
+        '
+
+    - echo "Deploying staging Nginx configuration"
+
+    - |
+      docker run --rm \
+        -v "$CI_PROJECT_DIR/Docker/nginx/lms-staging.conf:/source/lms-staging.conf:ro" \
+        -v /opt/nginx/conf.d:/target \
+        alpine:3.22 \
+        sh -c '
+          if [ -f /target/lms-staging.conf ]; then
+            cp /target/lms-staging.conf /target/lms-staging.conf.backup
+          fi
+
+          cp /source/lms-staging.conf /target/lms-staging.conf
+        '
+
+      if ! docker exec nginx nginx -t; then
+        echo "Nginx configuration validation failed - restoring previous configuration"
+
+        docker run --rm \
+          -v /opt/nginx/conf.d:/target \
+          alpine:3.22 \
+          sh -c '
+            if [ -f /target/lms-staging.conf.backup ]; then
+              mv /target/lms-staging.conf.backup /target/lms-staging.conf
+            else
+              rm -f /target/lms-staging.conf
+            fi
+          '
+
+        rm -f Docker/nginx/lms-staging.conf
+        exit 1
+      fi
+
+      docker exec nginx nginx -s reload
+
+      docker run --rm \
+        -v /opt/nginx/conf.d:/target \
+        alpine:3.22 \
+        rm -f /target/lms-staging.conf.backup
+
+      rm -f Docker/nginx/lms-staging.conf
+
+      echo "Staging Nginx configuration deployed successfully"
+
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "staging-developer" && $CI_PIPELINE_SOURCE == "push"'
