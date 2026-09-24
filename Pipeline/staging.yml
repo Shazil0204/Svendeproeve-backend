@@ -1,12 +1,22 @@
-staging-trigger-test:
+staging-build:
   stage: deploy-staging
   tags:
     - backend
 
+  variables:
+    STAGING_IMAGE: "lmsbackend-staging:$CI_COMMIT_SHORT_SHA"
+
   script:
-    - echo "Staging deployment pipeline triggered successfully."
-    - echo "Branch $CI_COMMIT_BRANCH"
-    - echo "Commit $CI_COMMIT_SHA"
+    - echo "Building staging candidate $STAGING_IMAGE"
+
+    - docker build
+        --file Docker/Dockerfile.backend
+        --tag "$STAGING_IMAGE"
+        .
+
+    - docker image inspect "$STAGING_IMAGE" > /dev/null
+
+    - echo "Candidate image built successfully $STAGING_IMAGE"
 
   rules:
     - if: '$CI_COMMIT_BRANCH == "staging-developer" && $CI_PIPELINE_SOURCE == "push"'
