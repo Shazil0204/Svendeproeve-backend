@@ -85,8 +85,25 @@ staging-build:
       done
 
       if [ "$healthy" != "true" ]; then
-        echo "Staging backend failed health check"
-        docker logs --tail 100 lms-staging-backend
+        echo "New staging backend failed health check"
+        docker logs --tail 100 lms-staging-backend || true
+
+        if [ -n "$PREVIOUS_IMAGE" ]; then
+          echo "Rolling back to $PREVIOUS_IMAGE"
+
+          STAGING_IMAGE="$PREVIOUS_IMAGE" docker compose \
+            -f Docker/docker-compose.staging.yaml \
+            up \
+            --detach \
+            --no-build \
+            --force-recreate \
+            backend
+
+          echo "Rollback container started"
+        else
+          echo "No previous staging image exists - rollback is not possible"
+        fi
+
         exit 1
       fi
 
