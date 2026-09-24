@@ -42,5 +42,16 @@ staging-build:
 
     - echo "Staging database initialized successfully"
 
+    - echo "Starting staging backend $STAGING_IMAGE"
+
+    - docker compose
+        -f Docker/docker-compose.staging.yaml
+        up
+        --detach
+        --no-build
+        backend
+
+    - echo "Staging backend container started"
+
   rules:
     - if: '$CI_COMMIT_BRANCH == "staging-developer" && $CI_PIPELINE_SOURCE == "push"'
