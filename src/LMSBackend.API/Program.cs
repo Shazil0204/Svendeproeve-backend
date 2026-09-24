@@ -62,6 +62,7 @@ builder.Services.AddCors(options =>
 builder.Services.AddHttpContextAccessor();
 
 // Dependencies Injection
+builder.Services.AddHealthChecks();
 builder.Services.AddScoped<IUnitOfWork>(serviceProvider => serviceProvider.GetRequiredService<AppDbContext>());
 builder.Services.AddScoped<AuditSaveChangesInterceptor>();
 builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
@@ -189,6 +190,8 @@ if (args.Contains("--initialize-database"))
 
     return;
 }
+
+app.MapHealthChecks("/health");
 
 // Catch exceptions from everything that runs after this middleware. 
 app.UseMiddleware<ExceptionHandlingMiddleware>();
