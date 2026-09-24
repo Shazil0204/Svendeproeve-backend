@@ -1,0 +1,12 @@
+staging-trigger-test:
+  stage: deploy-staging
+  tags:
+    - backend
+
+  script:
+    - echo "Staging deployment pipeline triggered successfully."
+    - echo "Branch $CI_COMMIT_BRANCH"
+    - echo "Commit $CI_COMMIT_SHA"
+
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "staging-developer" && $CI_PIPELINE_SOURCE == "push"'
