@@ -56,9 +56,12 @@ staging-build:
     - echo "Waiting for staging backend health check"
 
     - |
+      healthy=false
+
       for attempt in $(seq 1 12); do
         if curl --fail --silent http://127.0.0.1:8080/health > /dev/null; then
           echo "Staging backend is healthy"
+          healthy=true
           break
         fi
 
@@ -66,9 +69,11 @@ staging-build:
         sleep 5
       done
 
-      echo "Staging backend failed health check"
-      docker logs --tail 100 lms-staging-backend
-      exit 1
+      if [ "$healthy" != "true" ]; then
+        echo "Staging backend failed health check"
+        docker logs --tail 100 lms-staging-backend
+        exit 1
+      fi
 
     - echo "Ensuring Nginx is connected to the staging network"
 
