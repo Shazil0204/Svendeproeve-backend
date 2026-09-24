@@ -59,7 +59,7 @@ staging-build:
       for attempt in $(seq 1 12); do
         if curl --fail --silent http://127.0.0.1:8080/health > /dev/null; then
           echo "Staging backend is healthy"
-          exit 0
+          break
         fi
 
         echo "Backend not healthy yet ($attempt/12)"
