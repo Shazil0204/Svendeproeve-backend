@@ -59,7 +59,9 @@ staging-build:
       healthy=false
 
       for attempt in $(seq 1 12); do
-        if curl --fail --silent http://127.0.0.1:8080/health > /dev/null; then
+        if curl --fail --silent \
+          -H "Host: apistaging.moodleplusplus.dk" \
+          http://100.106.123.103/health > /dev/null; then
           echo "Staging backend is healthy"
           healthy=true
           break
