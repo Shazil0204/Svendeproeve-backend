@@ -11,6 +11,8 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
       - staging-postgres-data:/var/lib/postgresql/data
+    ports:
+      - "100.106.123.103:5432:5432"
     networks:
       - staging-network
     healthcheck:
