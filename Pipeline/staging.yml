@@ -19,7 +19,7 @@ staging-build:
     - echo "Candidate image built successfully $STAGING_IMAGE"
 
   rules:
-    - if: '$CI_COMMIT_BRANCH == "staging-developer" && $CI_PIPELINE_SOURCE == "push"'
+    - if: '$CI_COMMIT_BRANCH == "staging" && $CI_PIPELINE_SOURCE == "push"'
 
 
 staging-database:
@@ -56,7 +56,7 @@ staging-database:
     - echo "Staging database initialized successfully"
 
   rules:
-    - if: '$CI_COMMIT_BRANCH == "staging-developer" && $CI_PIPELINE_SOURCE == "push"'
+    - if: '$CI_COMMIT_BRANCH == "staging" && $CI_PIPELINE_SOURCE == "push"'
 
 
 staging-deploy:
@@ -100,7 +100,7 @@ staging-deploy:
     expire_in: 1 hour
 
   rules:
-    - if: '$CI_COMMIT_BRANCH == "staging-developer" && $CI_PIPELINE_SOURCE == "push"'
+    - if: '$CI_COMMIT_BRANCH == "staging" && $CI_PIPELINE_SOURCE == "push"'
 
 
 staging-verify:
@@ -176,7 +176,7 @@ staging-verify:
       fi
 
   rules:
-    - if: '$CI_COMMIT_BRANCH == "staging-developer" && $CI_PIPELINE_SOURCE == "push"'
+    - if: '$CI_COMMIT_BRANCH == "staging" && $CI_PIPELINE_SOURCE == "push"'
 
 
 staging-configure:
@@ -259,4 +259,4 @@ staging-configure:
       echo "Staging Nginx configuration deployed successfully"
 
   rules:
-    - if: '$CI_COMMIT_BRANCH == "staging-developer" && $CI_PIPELINE_SOURCE == "push"'
+    - if: '$CI_COMMIT_BRANCH == "staging" && $CI_PIPELINE_SOURCE == "push"'
