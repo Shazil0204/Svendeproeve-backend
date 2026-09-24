@@ -42,6 +42,19 @@ staging-build:
 
     - echo "Staging database initialized successfully"
 
+    - echo "Recording currently deployed staging image"
+
+    - |
+      PREVIOUS_IMAGE="$(docker inspect \
+        --format='{{.Config.Image}}' \
+        lms-staging-backend 2>/dev/null || true)"
+
+      if [ -n "$PREVIOUS_IMAGE" ]; then
+        echo "Currently deployed image: $PREVIOUS_IMAGE"
+      else
+        echo "No existing staging backend found"
+      fi
+
     - echo "Starting staging backend $STAGING_IMAGE"
 
     - docker compose
