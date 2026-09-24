@@ -47,6 +47,16 @@ services:
       - "8080:8080"
     networks:
       - staging-network
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "wget -qO- http://localhost:8080/health >/dev/null 2>&1 || exit 1"
+        ]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
     depends_on:
       database:
         condition: service_healthy
