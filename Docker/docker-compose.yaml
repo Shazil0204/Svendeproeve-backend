@@ -2,7 +2,7 @@ services:
   database:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.database
     container_name: lmsbackend-database
     restart: unless-stopped
     env_file:
