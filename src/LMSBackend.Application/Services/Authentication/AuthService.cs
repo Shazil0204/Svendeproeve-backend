@@ -197,8 +197,8 @@ public class AuthService : IAuthService
             throw new ValidationException("TermsOfService must be Accepted.");
         }
 
-        User? user = await _userRepository.GetByEmailAsync(
-            new Email(request.Email),
+        User? user = await _userRepository.GetByIdAsync(
+            _currentUserService.UserId ?? throw new UnauthorizedAccessException("User is not authenticated."),
             cancellationToken) ?? throw new NotFoundException("User not found.");
 
         UserConsent userConsentForTermOfService = new(
