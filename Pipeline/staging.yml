@@ -86,5 +86,46 @@ staging-build:
         echo "Nginx is already connected to lms-staging-network"
       fi
 
+    - echo "Deploying staging Nginx configuration"
+
+    - |
+      docker run --rm \
+        -v "$CI_PROJECT_DIR/Docker/nginx/lms-staging.conf:/source/lms-staging.conf:ro" \
+        -v /opt/nginx/conf.d:/target \
+        alpine:3.22 \
+        sh -c '
+          if [ -f /target/lms-staging.conf ]; then
+            cp /target/lms-staging.conf /target/lms-staging.conf.backup
+          fi
+
+          cp /source/lms-staging.conf /target/lms-staging.conf
+        '
+
+      if ! docker exec nginx nginx -t; then
+        echo "Nginx configuration validation failed - restoring previous configuration"
+
+        docker run --rm \
+          -v /opt/nginx/conf.d:/target \
+          alpine:3.22 \
+          sh -c '
+            if [ -f /target/lms-staging.conf.backup ]; then
+              mv /target/lms-staging.conf.backup /target/lms-staging.conf
+            else
+              rm -f /target/lms-staging.conf
+            fi
+          '
+
+        exit 1
+      fi
+
+      docker exec nginx nginx -s reload
+
+      docker run --rm \
+        -v /opt/nginx/conf.d:/target \
+        alpine:3.22 \
+        rm -f /target/lms-staging.conf.backup
+
+      echo "Staging Nginx configuration deployed successfully"
+
   rules:
     - if: '$CI_COMMIT_BRANCH == "staging-developer" && $CI_PIPELINE_SOURCE == "push"'
