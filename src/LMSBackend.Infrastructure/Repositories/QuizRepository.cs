@@ -14,7 +14,6 @@ public class QuizRepository : IQuizRepository
         _context = context;
     }
 
-    # region QUIZ REPOSITORY METHODS
     public async Task AddQuiz(Quiz quiz)
     {
         await _context.Quizzes.AddAsync(quiz);
@@ -22,14 +21,27 @@ public class QuizRepository : IQuizRepository
 
     public async Task<Quiz?> GetQuizById(Guid quizId)
     {
-        return await _context.Quizzes.FirstOrDefaultAsync(q => q.Id == quizId && !q.IsSoftDeleted);
+        return await _context.Quizzes
+            .FirstOrDefaultAsync(q =>
+                q.Id == quizId &&
+                !q.IsSoftDeleted);
     }
 
     public async Task<IEnumerable<Quiz>> GetAllQuizzes()
     {
-        return await _context.Quizzes.Where(q => !q.IsSoftDeleted)
-        .OrderByDescending(q => q.CreatedAt)
-        .ToListAsync();
+        return await _context.Quizzes
+            .Where(q => !q.IsSoftDeleted)
+            .OrderByDescending(q => q.CreatedAt)
+            .ToListAsync();
     }
-    # endregion
+
+    public async Task<IEnumerable<Quiz>> GetQuizzesByUserId(Guid userId)
+    {
+        return await _context.Quizzes
+            .Where(q =>
+                q.CreatedByUserId == userId &&
+                !q.IsSoftDeleted)
+            .OrderByDescending(q => q.CreatedAt)
+            .ToListAsync();
+    }
 }

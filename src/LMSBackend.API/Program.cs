@@ -37,6 +37,28 @@ WebApplicationBuilder? builder = WebApplication.CreateBuilder(args);
 string baseUrl = Environment.GetEnvironmentVariable("APP_BASE_URL")
     ?? throw new InvalidOperationException("APP_BASE_URL is not configured.");
 
+string[] allowedCorsOrigins = (Environment.GetEnvironmentVariable("CORS_ALLOWED_ORIGINS") ?? "*")
+    .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+if (allowedCorsOrigins.Length == 0)
+    throw new InvalidOperationException("CORS_ALLOWED_ORIGINS must contain '*' or at least one origin.");
+
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(policy =>
+    {
+        if (allowedCorsOrigins.Contains("*"))
+            policy.SetIsOriginAllowed(_ => true);
+        else
+            policy.WithOrigins(allowedCorsOrigins);
+
+        policy
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials();
+    });
+});
+
 builder.Services.AddHttpContextAccessor();
 
 // Dependencies Injection
@@ -58,7 +80,13 @@ builder.Services.AddScoped<ISubjectRepository, SubjectRepository>();
 builder.Services.AddScoped<IEduGoalService, EduGoalService>();
 builder.Services.AddScoped<IEduGoalRepository, EduGoalRepository>();
 builder.Services.AddScoped<IQuizService, QuizService>();
+builder.Services.AddScoped<IQuizQuestionService, QuizQuestionService>();
+builder.Services.AddScoped<IQuizAnswerOptionService, QuizAnswerOptionService>();
+builder.Services.AddScoped<IQuizStudentAnswerService, QuizStudentAnswerService>();
 builder.Services.AddScoped<IQuizRepository, QuizRepository>();
+builder.Services.AddScoped<IQuizQuestionRepository, QuizQuestionRepository>();
+builder.Services.AddScoped<IQuizAnswerOptionRepository, QuizAnswerOptionRepository>();
+builder.Services.AddScoped<IQuizStudentAnswerRepository, QuizStudentAnswerRepository>();
 builder.Services.AddScoped<ITaskService, TaskService>();
 builder.Services.AddScoped<ITaskRepository, TaskRepository>();
 builder.Services.AddScoped<ISubmissionRepository, SubmissionRepository>();
@@ -159,6 +187,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseCors();
 
 app.UseAuthentication();
 
