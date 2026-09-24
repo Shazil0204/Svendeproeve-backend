@@ -1,6 +1,10 @@
 stages:
   - validate
-  - deploy-staging
+  - staging-build
+  - staging-database
+  - staging-deploy
+  - staging-verify
+  - staging-configure
 
 workflow:
   rules:
