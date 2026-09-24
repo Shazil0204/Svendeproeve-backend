@@ -53,5 +53,33 @@ staging-build:
 
     - echo "Staging backend container started"
 
+    - echo "Waiting for staging backend health check"
+
+    - |
+      for attempt in $(seq 1 12); do
+        if curl --fail --silent http://127.0.0.1:8080/health > /dev/null; then
+          echo "Staging backend is healthy"
+          exit 0
+        fi
+
+        echo "Backend not healthy yet ($attempt/12)"
+        sleep 5
+      done
+
+      echo "Staging backend failed health check"
+      docker logs --tail 100 lms-staging-backend
+      exit 1
+
+    - echo "Ensuring Nginx is connected to the staging network"
+
+    - |
+      if ! docker network inspect lms-staging-network \
+        --format '{{range .Containers}}{{.Name}} {{end}}' | grep -qw nginx; then
+        docker network connect lms-staging-network nginx
+        echo "Nginx connected to lms-staging-network"
+      else
+        echo "Nginx is already connected to lms-staging-network"
+      fi
+
   rules:
     - if: '$CI_COMMIT_BRANCH == "staging-developer" && $CI_PIPELINE_SOURCE == "push"'
