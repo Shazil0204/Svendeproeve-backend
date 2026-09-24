@@ -26,6 +26,7 @@ services:
     build:
       context: ..
       dockerfile: Docker/Dockerfile.backend
+    image: ${STAGING_IMAGE:-lmsbackend-staging:local}
     container_name: lms-staging-backend
     restart: unless-stopped
     environment:
