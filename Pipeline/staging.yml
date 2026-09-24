@@ -18,5 +18,17 @@ staging-build:
 
     - echo "Candidate image built successfully $STAGING_IMAGE"
 
+    - echo "Starting staging PostgreSQL database"
+
+    - docker compose
+        -f Docker/docker-compose.staging.yaml
+        up
+        --detach
+        --build
+        --wait
+        database
+
+    - echo "Staging PostgreSQL database is healthy"
+
   rules:
     - if: '$CI_COMMIT_BRANCH == "staging-developer" && $CI_PIPELINE_SOURCE == "push"'
