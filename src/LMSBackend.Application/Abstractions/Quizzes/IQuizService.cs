@@ -4,9 +4,15 @@ namespace LMSBackend.Application.Abstractions.Quizzes;
 
 public interface IQuizService
 {
-    Task AddQuiz(CreateQuizRequest quiz);
-    Task<QuizResponse?> GetQuizById(Guid quizId);
-    Task<IEnumerable<QuizResponse>> GetAllQuizzes();
-    Task UpdateQuiz(Guid quizId, UpdateQuizRequest updatedQuiz);
-    Task DeleteQuiz(Guid quizId);
+    Task CreateQuizAsync(CreateQuizRequest request);
+
+    Task UpdateQuizAsync(Guid quizId, UpdateQuizRequest request);
+
+    Task<QuizResponse> GetQuizByIdAsync(Guid quizId);
+
+    Task<IEnumerable<QuizResponse>> GetQuizzesByUserIdAsync(Guid userId);
+
+    Task<IEnumerable<QuizResponse>> GetAllQuizzesAsync();
+
+    Task DeleteQuizAsync(Guid quizId);
 }

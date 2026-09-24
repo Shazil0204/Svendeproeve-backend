@@ -14,6 +14,11 @@ public sealed class QuizAnswerConfiguration : IEntityTypeConfiguration<QuizAnswe
             .WithMany()
             .HasForeignKey(answer => answer.QuizStudentId)
             .OnDelete(DeleteBehavior.Restrict);
+        builder.HasIndex(answer => new
+            {
+                answer.QuizStudentId,
+                answer.QuizQuestionId
+            }).IsUnique();
         builder.HasOne(answer => answer.QuizQuestion)
             .WithMany()
             .HasForeignKey(answer => answer.QuizQuestionId)

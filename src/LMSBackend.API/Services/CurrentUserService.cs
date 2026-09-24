@@ -31,6 +31,10 @@ public sealed class CurrentUserService : ICurrentUserService
         }
     }
 
+    public string? Role =>
+        _httpContextAccessor.HttpContext?
+            .User.FindFirstValue(ClaimTypes.Role);
+
     public void SetUserId(Guid? userId)
     {
         _explicitUserId = userId;

@@ -1,9 +1,9 @@
 namespace LMSBackend.Application.DTOs.Quizzes;
 
-public sealed record CreateQuizRequest
-(
+public sealed record CreateQuizRequest(
     Guid SubjectId,
     string Title,
     string Description,
-    int PassingPercentage
+    decimal PassingPercentage,
+    IEnumerable<CreateQuizQuestionRequest> Questions
 );
