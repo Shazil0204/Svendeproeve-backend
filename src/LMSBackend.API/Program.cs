@@ -195,7 +195,7 @@ if (args.Contains("--initialize-database"))
     return;
 }
 
-app.MapGet("/health", () => Results.StatusCode(500));
+app.MapHealthChecks("/health");
 
 // Catch exceptions from everything that runs after this middleware. 
 app.UseMiddleware<ExceptionHandlingMiddleware>();
