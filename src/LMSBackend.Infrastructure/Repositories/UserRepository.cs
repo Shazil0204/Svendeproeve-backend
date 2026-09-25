@@ -70,4 +70,41 @@ public class UserRepository : IUserRepository
 
         return missingConsents;
     }
+
+    public async Task<List<(User User, bool IsMissingConsents)>> GetAllWithConsentStatusAsync(
+            CancellationToken cancellationToken = default)
+    {
+        ConsentType[] requiredConsentTypes = Enum.GetValues<ConsentType>();
+
+        List<User> users = await _dbContext.Users
+            .Where(u => !u.IsSoftDeleted && u.Role != UserRole.Administrator)
+            .ToListAsync(cancellationToken);
+
+        Dictionary<Guid, HashSet<ConsentType>> userConsents = await _dbContext.UserConsents
+            .GroupBy(c => c.UserId)
+            .ToDictionaryAsync(
+                group => group.Key,
+                group => group.Select(c => c.ConsentType).ToHashSet(),
+                cancellationToken
+            );
+
+        List<(User User, bool IsMissingConsents)> result = users
+            .Select(user =>
+            {
+                bool hasConsents = userConsents.TryGetValue(
+                    user.Id,
+                    out HashSet<ConsentType>? consentTypes
+                );
+
+                bool isMissingConsents =
+                    !hasConsents ||
+                    requiredConsentTypes.Any(required =>
+                        !consentTypes!.Contains(required));
+
+                return (user, isMissingConsents);
+            })
+            .ToList();
+
+        return result;
+    }
 }
