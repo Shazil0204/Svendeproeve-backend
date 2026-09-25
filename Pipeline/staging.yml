@@ -203,7 +203,7 @@ staging-configure:
         -e NGINX_SERVER_NAME \
         -e NGINX_BACKEND_HOST \
         -e NGINX_BACKEND_PORT \
-        -v "$CI_PROJECT_DIR/Docker/nginx/lms-staging.conf.template:/template.conf:ro" \
+        -v "$CI_PROJECT_DIR/Docker/nginx/lms-backend-staging.conf.template:/template.conf:ro" \
         -v "$CI_PROJECT_DIR/Docker/nginx:/output" \
         alpine:3.22 \
         sh -c '
@@ -211,22 +211,22 @@ staging-configure:
           envsubst \
             "\${NGINX_SERVER_NAME} \${NGINX_BACKEND_HOST} \${NGINX_BACKEND_PORT}" \
             < /template.conf \
-            > /output/lms-staging.conf
+            > /output/lms-backend-staging.conf
         '
 
     - echo "Deploying staging Nginx configuration"
 
     - |
       docker run --rm \
-        -v "$CI_PROJECT_DIR/Docker/nginx/lms-staging.conf:/source/lms-staging.conf:ro" \
+        -v "$CI_PROJECT_DIR/Docker/nginx/lms-backend-staging.conf:/source/lms-backend-staging.conf:ro" \
         -v /opt/nginx/conf.d:/target \
         alpine:3.22 \
         sh -c '
-          if [ -f /target/lms-staging.conf ]; then
-            cp /target/lms-staging.conf /target/lms-staging.conf.backup
+          if [ -f /target/lms-backend-staging.conf ]; then
+            cp /target/lms-backend-staging.conf /target/lms-backend-staging.conf.backup
           fi
 
-          cp /source/lms-staging.conf /target/lms-staging.conf
+          cp /source/lms-backend-staging.conf /target/lms-backend-staging.conf
         '
 
       if ! docker exec nginx nginx -t; then
@@ -236,14 +236,14 @@ staging-configure:
           -v /opt/nginx/conf.d:/target \
           alpine:3.22 \
           sh -c '
-            if [ -f /target/lms-staging.conf.backup ]; then
-              mv /target/lms-staging.conf.backup /target/lms-staging.conf
+            if [ -f /target/lms-backend-staging.conf.backup ]; then
+              mv /target/lms-backend-staging.conf.backup /target/lms-backend-staging.conf
             else
-              rm -f /target/lms-staging.conf
+              rm -f /target/lms-backend-staging.conf
             fi
           '
 
-        rm -f Docker/nginx/lms-staging.conf
+        rm -f Docker/nginx/lms-backend-staging.conf
         exit 1
       fi
 
@@ -252,9 +252,9 @@ staging-configure:
       docker run --rm \
         -v /opt/nginx/conf.d:/target \
         alpine:3.22 \
-        rm -f /target/lms-staging.conf.backup
+        rm -f /target/lms-backend-staging.conf.backup
 
-      rm -f Docker/nginx/lms-staging.conf
+      rm -f Docker/nginx/lms-backend-staging.conf
 
       echo "Staging Nginx configuration deployed successfully"
 
