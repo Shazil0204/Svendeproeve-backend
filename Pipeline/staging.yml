@@ -203,7 +203,7 @@ staging-configure:
         -e NGINX_SERVER_NAME \
         -e NGINX_BACKEND_HOST \
         -e NGINX_BACKEND_PORT \
-        -v "$CI_PROJECT_DIR/Docker/nginx/lms-backend-staging.conf.template:/template.conf:ro" \
+        -v "$CI_PROJECT_DIR/Docker/nginx/lms-staging.conf.template:/template.conf:ro" \
         -v "$CI_PROJECT_DIR/Docker/nginx:/output" \
         alpine:3.22 \
         sh -c '
