@@ -1,4 +1,6 @@
 using System.Text;
+using LMSBackend.Application.Abstractions.Dashboard;
+using LMSBackend.Application.Services.Dashboard;
 using LMSBackend.Application.Abstractions.Submissions;
 using LMSBackend.Application.Services.Submissions;
 using LMSBackend.Infrastructure.Storage;
@@ -93,6 +95,8 @@ builder.Services.AddScoped<ITaskService, TaskService>();
 builder.Services.AddScoped<ITaskRepository, TaskRepository>();
 builder.Services.AddScoped<ISubmissionRepository, SubmissionRepository>();
 builder.Services.AddScoped<ISubmissionService, SubmissionService>();
+builder.Services.AddScoped<IDashboardService, DashboardService>();
+builder.Services.AddScoped<IDashboardReadRepository, DashboardReadRepository>();
 
 long maxSubmissionFileBytes = builder.Configuration.GetValue<long?>("SubmissionStorage:MaxFileBytes")
     ?? throw new InvalidOperationException("SubmissionStorage__MaxFileBytes is not configured.");
