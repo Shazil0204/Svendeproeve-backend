@@ -256,6 +256,18 @@ public class QuizController : ControllerBase
     // Student Quiz
     // --------------------
 
+    [HttpGet("{quizId:guid}/student-status")]
+    [Authorize(Roles = "Student")]
+    public async Task<ActionResult<QuizStudentResponse>> GetCurrentStudentQuizStatus(
+        Guid quizId)
+    {
+        QuizStudentResponse status =
+            await _quizStudentAnswerService
+                .GetCurrentStudentQuizStatusAsync(quizId);
+
+        return Ok(status);
+    }
+
     [HttpGet("{quizId:guid}/students/{studentId:guid}")]
     [Authorize(Roles = "Student")]
     public async Task<ActionResult<StudentQuizResponse>> GetStudentQuiz(
