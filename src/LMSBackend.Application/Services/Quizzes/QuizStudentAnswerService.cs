@@ -145,6 +145,33 @@ public class QuizStudentAnswerService : IQuizStudentAnswerService
                 quizStudent.Status.ToString()));
     }
 
+    public async Task<QuizStudentResponse> GetCurrentStudentQuizStatusAsync(
+        Guid quizId)
+    {
+        EnsureStudent();
+
+        Guid studentId = GetCurrentUserId();
+        QuizStudent? quizStudent =
+            await _quizStudentAnswerRepository.GetQuizStudent(
+                quizId,
+                studentId);
+
+        if (quizStudent is null)
+        {
+            throw new NotFoundException("Student is not assigned to this quiz.");
+        }
+
+        return new QuizStudentResponse(
+            quizStudent.Id,
+            quizStudent.QuizId,
+            quizStudent.StudentId,
+            quizStudent.AssignedAt,
+            quizStudent.ScorePercentage?.Value,
+            quizStudent.Passed,
+            quizStudent.CompletedAt,
+            quizStudent.Status.ToString());
+    }
+
     public async Task<StudentQuizResponse> GetStudentQuizAsync(
         Guid quizId,
         Guid studentId)
