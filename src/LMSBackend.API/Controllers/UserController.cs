@@ -50,7 +50,7 @@ namespace LMSBackend.API.Controllers
             return NoContent();
         }
 
-        [Authorize(Roles = nameof(UserRole.Teacher))]
+        [Authorize(Roles = $"{nameof(UserRole.Administrator)},{nameof(UserRole.Teacher)}")]
         [HttpGet]
         public async Task<ActionResult<List<UserResponse>>> GetAllUsers(CancellationToken cancellationToken)
         {
