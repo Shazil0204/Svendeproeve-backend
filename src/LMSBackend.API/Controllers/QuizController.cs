@@ -72,6 +72,7 @@ public class QuizController : ControllerBase
     }
 
     [HttpGet("user/{userId:guid}")]
+    [AllowAnonymous]
     public async Task<ActionResult<IEnumerable<QuizResponse>>> GetQuizzesByUser(
         Guid userId)
     {
