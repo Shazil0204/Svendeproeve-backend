@@ -17,7 +17,7 @@ public sealed class QuizStudentConfiguration : IEntityTypeConfiguration<QuizStud
             .HasPrecision(5, 2);
         builder.Property(attempt => attempt.Status).HasConversion<string>().HasMaxLength(32).IsRequired();
         builder.HasOne(attempt => attempt.Quiz)
-            .WithMany()
+            .WithMany(quiz => quiz.QuizStudents)
             .HasForeignKey(attempt => attempt.QuizId)
             .OnDelete(DeleteBehavior.Restrict);
         builder.HasOne(attempt => attempt.Student)
