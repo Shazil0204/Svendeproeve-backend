@@ -11,4 +11,6 @@ public interface IQuizRepository
     Task<IEnumerable<Quiz>> GetAllQuizzes();
 
     Task<IEnumerable<Quiz>> GetQuizzesByUserId(Guid userId);
+
+    Task<IEnumerable<Quiz>> GetQuizzesByStudentId(Guid studentId);
 }

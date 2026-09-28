@@ -85,6 +85,16 @@ public class QuizController : ControllerBase
         return Ok(quizzes);
     }
 
+    [Authorize(Roles = "Student")]
+    [HttpGet("student")]
+    public async Task<ActionResult<IEnumerable<QuizResponse>>> GetQuizzesByStudent()
+    {
+        IEnumerable<QuizResponse> quizzes =
+            await _quizService.GetQuizzesByStudentIdAsync();
+
+        return Ok(quizzes);
+    }
+
     [HttpDelete("{quizId:guid}")]
     [Authorize(Roles = "Teacher")]
     public async Task<IActionResult> DeleteQuiz(
