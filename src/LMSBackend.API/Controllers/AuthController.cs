@@ -67,7 +67,7 @@ namespace LMSBackend.API.Controllers
             return Ok(result.User);
         }
 
-        [Authorize(Roles = $"{nameof(UserRole.Student)},{nameof(UserRole.Teacher)},{nameof(UserRole.Administrator)}")]
+        [AllowAnonymous]
         [HttpPost("logout")]
         public async Task<IActionResult> Logout(
             CancellationToken cancellationToken)
