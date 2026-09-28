@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http;
 using LMSBackend.Application.DTOs.Users;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
+using LMSBackend.Domain.Enums.Users;
 
 namespace LMSBackend.API.Controllers
 {
@@ -66,7 +67,7 @@ namespace LMSBackend.API.Controllers
             return Ok(result.User);
         }
 
-        [Authorize]
+        [Authorize(Roles = $"{nameof(UserRole.Student)},{nameof(UserRole.Teacher)},{nameof(UserRole.Administrator)}")]
         [HttpPost("logout")]
         public async Task<IActionResult> Logout(
             CancellationToken cancellationToken)
@@ -93,7 +94,7 @@ namespace LMSBackend.API.Controllers
             return NoContent();
         }
 
-        [Authorize]
+        [Authorize(Roles = $"{nameof(UserRole.Student)},{nameof(UserRole.Teacher)},{nameof(UserRole.Administrator)}")]
         [HttpPost("refresh")]
         public async Task<ActionResult<TokenResponse>> Refresh(
             CancellationToken cancellationToken)
