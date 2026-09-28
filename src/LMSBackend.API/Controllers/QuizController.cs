@@ -1,5 +1,6 @@
 using LMSBackend.Application.Abstractions.Quizzes;
 using LMSBackend.Application.DTOs.Quizzes;
+using LMSBackend.Domain.Enums.Users;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -53,6 +54,7 @@ public class QuizController : ControllerBase
     }
 
     [HttpGet("{quizId:guid}")]
+    [Authorize(Roles = "Teacher, Student")]
     public async Task<ActionResult<QuizResponse>> GetQuiz(
         Guid quizId)
     {
@@ -63,6 +65,7 @@ public class QuizController : ControllerBase
     }
 
     [HttpGet]
+    [Authorize(Roles = "Teacher")]
     public async Task<ActionResult<IEnumerable<QuizResponse>>> GetAllQuizzes()
     {
         IEnumerable<QuizResponse> quizzes =
@@ -71,8 +74,8 @@ public class QuizController : ControllerBase
         return Ok(quizzes);
     }
 
+    [Authorize(Roles = "Teacher, Student")]
     [HttpGet("user/{userId:guid}")]
-    [AllowAnonymous]
     public async Task<ActionResult<IEnumerable<QuizResponse>>> GetQuizzesByUser(
         Guid userId)
     {
@@ -123,6 +126,7 @@ public class QuizController : ControllerBase
     }
 
     [HttpGet("{quizId:guid}/questions")]
+    [Authorize(Roles = "Teacher, Student")]
     public async Task<ActionResult<IEnumerable<QuizQuestionResponse>>>
         GetQuestions(Guid quizId)
     {
@@ -174,6 +178,7 @@ public class QuizController : ControllerBase
     }
 
     [HttpGet("questions/{questionId:guid}/options")]
+    [Authorize(Roles = "Teacher, Student")]
     public async Task<ActionResult<IEnumerable<QuizAnswerOptionResponse>>>
         GetAnswerOptions(Guid questionId)
     {
@@ -271,6 +276,7 @@ public class QuizController : ControllerBase
     }
 
     [HttpGet("{quizId:guid}/students/{studentId:guid}/answers")]
+    [Authorize(Roles = "Teacher, Student")]
     public async Task<ActionResult<IEnumerable<QuizAnswerResponse>>>
         GetStudentAnswers(
             Guid quizId,
