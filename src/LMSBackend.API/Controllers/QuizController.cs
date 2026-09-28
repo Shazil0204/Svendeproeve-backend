@@ -136,7 +136,7 @@ public class QuizController : ControllerBase
     }
 
     [HttpGet("{quizId:guid}/questions")]
-    [Authorize(Roles = "Teacher, Student")]
+    [Authorize(Roles = "Teacher")]
     public async Task<ActionResult<IEnumerable<QuizQuestionResponse>>>
         GetQuestions(Guid quizId)
     {
@@ -188,7 +188,7 @@ public class QuizController : ControllerBase
     }
 
     [HttpGet("questions/{questionId:guid}/options")]
-    [Authorize(Roles = "Teacher, Student")]
+    [Authorize(Roles = "Teacher")]
     public async Task<ActionResult<IEnumerable<QuizAnswerOptionResponse>>>
         GetAnswerOptions(Guid questionId)
     {
@@ -255,6 +255,20 @@ public class QuizController : ControllerBase
     // --------------------
     // Student Quiz
     // --------------------
+
+    [HttpGet("{quizId:guid}/students/{studentId:guid}/review")]
+    [Authorize(Roles = "Teacher, Student")]
+    public async Task<ActionResult<QuizReviewResponse>> GetQuizReview(
+        Guid quizId,
+        Guid studentId)
+    {
+        QuizReviewResponse review =
+            await _quizStudentAnswerService.GetQuizReviewAsync(
+                quizId,
+                studentId);
+
+        return Ok(review);
+    }
 
     [HttpGet("{quizId:guid}/student-status")]
     [Authorize(Roles = "Student")]
