@@ -18,6 +18,7 @@ public class Quiz
     public DateTimeOffset? DeletedAt { get; private set; }
     public Subject Subject { get; private set; } = null!;
     public User CreatedByUser { get; private set; } = null!;
+    public ICollection<QuizStudent> QuizStudents { get; private set; } = new List<QuizStudent>();
 
     private Quiz() { }
 

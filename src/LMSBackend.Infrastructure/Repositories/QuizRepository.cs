@@ -44,4 +44,14 @@ public class QuizRepository : IQuizRepository
             .OrderByDescending(q => q.CreatedAt)
             .ToListAsync();
     }
+
+    public async Task<IEnumerable<Quiz>> GetQuizzesByStudentId(Guid studentId)
+    {
+        return await _context.Quizzes
+            .Where(q =>
+                q.QuizStudents.Any(qs => qs.StudentId == studentId) &&
+                !q.IsSoftDeleted)
+            .OrderByDescending(q => q.CreatedAt)
+            .ToListAsync();
+    }
 }
