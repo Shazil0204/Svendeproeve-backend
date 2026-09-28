@@ -11,7 +11,8 @@ namespace LMSBackend.API.Controllers;
 public sealed class DashboardController(IDashboardService dashboard) : ControllerBase
 {
     [HttpGet("me")]
-    [Authorize(Roles = nameof(UserRole.Student))]
+    // [Authorize(Roles = nameof(UserRole.Student))]
+    [AllowAnonymous]
     public async Task<ActionResult<StudentDashboardDto>> GetMine([FromQuery] DashboardQuery query,
         CancellationToken cancellationToken) =>
         Ok(await dashboard.GetMineAsync(query, cancellationToken));

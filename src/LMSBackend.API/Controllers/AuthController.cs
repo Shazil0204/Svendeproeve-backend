@@ -48,7 +48,7 @@ namespace LMSBackend.API.Controllers
                 {
                     HttpOnly = true,
                     Secure = true,
-                    SameSite = SameSiteMode.Strict,
+                    SameSite = SameSiteMode.None,
                     Expires = result.TokenResponse.AccessTokenExpiresAt
                 });
 
@@ -59,7 +59,7 @@ namespace LMSBackend.API.Controllers
                 {
                     HttpOnly = true,
                     Secure = true,
-                    SameSite = SameSiteMode.Strict,
+                    SameSite = SameSiteMode.None,
                     Expires = result.TokenResponse.RefreshTokenExpiresAt
                 });
 
@@ -114,7 +114,7 @@ namespace LMSBackend.API.Controllers
                 {
                     HttpOnly = true,
                     Secure = true,
-                    SameSite = SameSiteMode.Strict,
+                    SameSite = SameSiteMode.None,
                     Expires = result.AccessTokenExpiresAt
                 });
 
@@ -125,7 +125,7 @@ namespace LMSBackend.API.Controllers
                 {
                     HttpOnly = true,
                     Secure = true,
-                    SameSite = SameSiteMode.Strict,
+                    SameSite = SameSiteMode.None,
                     Expires = result.RefreshTokenExpiresAt
                 });
 
