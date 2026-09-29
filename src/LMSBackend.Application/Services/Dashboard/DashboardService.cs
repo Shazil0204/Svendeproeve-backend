@@ -10,6 +10,19 @@ namespace LMSBackend.Application.Services.Dashboard;
 public sealed class DashboardService(IDashboardReadRepository repository, ICurrentUserService currentUser)
     : IDashboardService
 {
+    public async Task<TeacherDashboardDto> GetTeacherMineAsync(TeacherDashboardQuery query,
+        CancellationToken cancellationToken)
+    {
+        Guid teacherId = UserId;
+        if (currentUser.Role != nameof(UserRole.Teacher))
+            throw new NotFoundException("Teacher dashboard not found.");
+        ValidatePage(query.SubjectPage, query.PageSize);
+        ValidatePage(query.TaskPage, query.PageSize);
+        ValidatePage(query.AssignmentPage, query.PageSize);
+        return await repository.GetTeacherAsync(teacherId, query, cancellationToken)
+            ?? throw new NotFoundException("Teacher dashboard not found.");
+    }
+
     public Task<StudentDashboardDto> GetMineAsync(DashboardQuery query, CancellationToken cancellationToken)
     {
         Guid studentId = UserId;
