@@ -1,7 +1,6 @@
 using LMSBackend.Application.DTOs.Dashboard;
 using LMSBackend.Application.DTOs.Subjects;
 using LMSBackend.Application.DTOs.Tasks;
-using LMSBackend.Domain.Enums.Tasks;
 using LMSBackend.Domain.Enums.Users;
 using Microsoft.EntityFrameworkCore;
 
@@ -70,19 +69,5 @@ public sealed partial class DashboardReadRepository
             new(subjects, subjectCount, query.SubjectPage, query.PageSize),
             new(tasks, taskCount, query.TaskPage, query.PageSize),
             new(assignments, assignmentCount, query.AssignmentPage, query.PageSize));
-    }
-
-    private sealed class TeacherAssignmentRow
-    {
-        public Guid AssignmentId { get; init; }
-        public Guid TaskId { get; init; }
-        public string Title { get; init; } = string.Empty;
-        public Guid SubjectId { get; init; }
-        public string RecipientType { get; init; } = string.Empty;
-        public Guid RecipientId { get; init; }
-        public string RecipientName { get; init; } = string.Empty;
-        public StudentTaskStatus Status { get; init; }
-        public DateTimeOffset AssignedAt { get; init; }
-        public DateTimeOffset? Deadline { get; init; }
     }
 }
