@@ -1,3 +1,4 @@
+name: lms-staging
 services:
   database:
     build:

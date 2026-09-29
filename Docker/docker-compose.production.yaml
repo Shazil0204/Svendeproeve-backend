@@ -1,3 +1,4 @@
+name: lms-production
 services:
   database:
     build:
