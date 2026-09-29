@@ -101,5 +101,13 @@ public sealed class TaskRepository : ITaskRepository
         _context.TaskEducationalGoals.AddRange(objectiveIds.Where(id => !previous.Contains(id))
             .Select(id => new TaskEducationalGoal(taskId, id)));
     }
+
+    public async Task<IReadOnlyList<TaskEntity>> GetTasksBySubjectIdAsync(Guid subjectId, CancellationToken cancellationToken)
+    {
+        return await _context.Tasks.AsNoTracking()
+            .Where(task => task.SubjectId == subjectId && !task.IsSoftDeleted)
+            .OrderByDescending(task => task.CreatedAt).ThenBy(task => task.Id)
+            .ToListAsync(cancellationToken);
+    }
 }
 

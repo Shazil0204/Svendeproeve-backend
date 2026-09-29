@@ -65,4 +65,10 @@ public class EduGoalService : IEduGoalService
         await _eduGoalRepository.DeleteEduGoal(eduGoal);
         await _unitOfWork.SaveChangesAsync();
     }
+
+    public async Task<IReadOnlyList<EduGoalResponse>> GetEduGoalBySubjectId(Guid subjectId)
+    {
+        IReadOnlyList<EducationalGoal> eduGoals = await _eduGoalRepository.GetEduGoalBySubjectId(subjectId);
+        return eduGoals.Select(eduGoal => new EduGoalResponse(eduGoal.Id, eduGoal.SubjectId, eduGoal.Content)).ToList();
+    }
 }

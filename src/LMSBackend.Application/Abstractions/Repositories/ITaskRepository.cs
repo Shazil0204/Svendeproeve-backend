@@ -10,6 +10,7 @@ namespace LMSBackend.Application.Abstractions.Repositories;
 public interface ITaskRepository
 {
     Task<IReadOnlyList<TaskEntity>> GetAllAsync(CancellationToken cancellationToken);
+    Task<IReadOnlyList<TaskEntity>> GetTasksBySubjectIdAsync(Guid subjectId, CancellationToken cancellationToken);
     Task<TaskEntity?> GetByIdAsync(Guid taskId, CancellationToken cancellationToken);
     Task<bool> SubjectExistsAsync(Guid subjectId, CancellationToken cancellationToken);
     void Add(TaskEntity task);
