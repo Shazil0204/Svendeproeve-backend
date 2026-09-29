@@ -13,7 +13,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace LMSBackend.Infrastructure.Repositories;
 
-public sealed class DashboardReadRepository(AppDbContext context) : IDashboardReadRepository
+public sealed partial class DashboardReadRepository(AppDbContext context) : IDashboardReadRepository
 {
     private IQueryable<User> Students => context.Users.AsNoTracking()
         .Where(s => s.Role == UserRole.Student && s.IsActive && !s.IsSoftDeleted);

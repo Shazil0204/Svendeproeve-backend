@@ -94,7 +94,7 @@ namespace LMSBackend.API.Controllers
             return NoContent();
         }
 
-        [Authorize(Roles = $"{nameof(UserRole.Student)},{nameof(UserRole.Teacher)},{nameof(UserRole.Administrator)}")]
+        [AllowAnonymous]
         [HttpPost("refresh")]
         public async Task<ActionResult<TokenResponse>> Refresh(
             CancellationToken cancellationToken)
