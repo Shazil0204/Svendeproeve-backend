@@ -203,6 +203,7 @@ production-configure:
   stage: production-configure
   tags:
     - backend
+
   environment:
     name: production
 
@@ -217,68 +218,6 @@ production-configure:
       else
         echo "Nginx is already connected to lms-production-backend-network"
       fi
-
-    - echo "Rendering production Nginx configuration"
-
-    - |
-      docker run --rm \
-        -e NGINX_SERVER_NAME \
-        -e NGINX_BACKEND_HOST \
-        -e NGINX_BACKEND_PORT \
-        -v "$CI_PROJECT_DIR/Docker/nginx/lms-production.conf.template:/template.conf:ro" \
-        -v "$CI_PROJECT_DIR/Docker/nginx:/output" \
-        alpine:3.22 \
-        sh -c '
-          apk add --no-cache gettext > /dev/null &&
-          envsubst \
-            "\${NGINX_SERVER_NAME} \${NGINX_BACKEND_HOST} \${NGINX_BACKEND_PORT}" \
-            < /template.conf \
-            > /output/lms-backend-production.conf
-        '
-
-    - echo "Deploying production Nginx configuration"
-
-    - |
-      docker run --rm \
-        -v "$CI_PROJECT_DIR/Docker/nginx/lms-backend-production.conf:/source/lms-backend-production.conf:ro" \
-        -v /opt/nginx/conf.d:/target \
-        alpine:3.22 \
-        sh -c '
-          if [ -f /target/lms-backend-production.conf ]; then
-            cp /target/lms-backend-production.conf /target/lms-backend-production.conf.backup
-          fi
-
-          cp /source/lms-backend-production.conf /target/lms-backend-production.conf
-        '
-
-      if ! docker exec nginx nginx -t; then
-        echo "Nginx configuration validation failed - restoring previous configuration"
-
-        docker run --rm \
-          -v /opt/nginx/conf.d:/target \
-          alpine:3.22 \
-          sh -c '
-            if [ -f /target/lms-backend-production.conf.backup ]; then
-              mv /target/lms-backend-production.conf.backup /target/lms-backend-production.conf
-            else
-              rm -f /target/lms-backend-production.conf
-            fi
-          '
-
-        rm -f Docker/nginx/lms-backend-production.conf
-        exit 1
-      fi
-
-      docker exec nginx nginx -s reload
-
-      docker run --rm \
-        -v /opt/nginx/conf.d:/target \
-        alpine:3.22 \
-        rm -f /target/lms-backend-production.conf.backup
-
-      rm -f Docker/nginx/lms-backend-production.conf
-
-      echo "Production Nginx configuration deployed successfully"
 
   rules:
     - if: '$CI_COMMIT_BRANCH == "main" && $CI_PIPELINE_SOURCE == "push"'
