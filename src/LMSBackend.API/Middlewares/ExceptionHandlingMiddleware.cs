@@ -9,13 +9,16 @@ public sealed class ExceptionHandlingMiddleware
 {
     private readonly RequestDelegate _next;
     private readonly ILogger<ExceptionHandlingMiddleware> _logger;
+    private readonly IWebHostEnvironment _environment;
 
     public ExceptionHandlingMiddleware(
         RequestDelegate next,
-        ILogger<ExceptionHandlingMiddleware> logger)
+        ILogger<ExceptionHandlingMiddleware> logger,
+        IWebHostEnvironment environment)
     {
         _next = next;
         _logger = logger;
+        _environment = environment;
     }
 
     public async Task InvokeAsync(HttpContext context)
@@ -38,14 +41,19 @@ public sealed class ExceptionHandlingMiddleware
                 throw;
             }
 
-            await HandleExceptionAsync(context, exception, traceId);
+            await HandleExceptionAsync(
+                context,
+                exception,
+                traceId,
+                _environment.IsDevelopment());
         }
     }
 
     private static async Task HandleExceptionAsync(
         HttpContext context,
         Exception exception,
-        string traceId)
+        string traceId,
+        bool isDevelopment)
     {
         var (statusCode, title, detail) = exception switch
         {
@@ -77,7 +85,9 @@ public sealed class ExceptionHandlingMiddleware
             _ => (
                 StatusCodes.Status500InternalServerError,
                 "Internal Server Error",
-                "An unexpected error occurred.")
+                isDevelopment
+                    ? exception.Message
+                    : "An unexpected error occurred.")
         };
 
         var problem = new ProblemDetails
