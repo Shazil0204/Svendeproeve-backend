@@ -60,5 +60,13 @@ namespace LMSBackend.API.Controllers
             await _subjectService.SoftDeleteSubject(subjectId);
             return NoContent();
         }
+        
+        [Authorize(Roles = "Teacher, Student")]
+        [HttpGet("user/{userId}")]
+        public async Task<IActionResult> GetAllSubjectsByUserId(Guid userId)
+        {
+            IEnumerable<SubjectResponseDTO> subjects = await _subjectService.GetAllSubjectsByUserId(userId);
+            return Ok(subjects);
+        }
     }
 }
