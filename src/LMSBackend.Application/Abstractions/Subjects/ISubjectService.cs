@@ -10,4 +10,5 @@ public interface ISubjectService
     Task<IEnumerable<SubjectResponseDTO>> GetAllSubjects();
     Task UpdateSubject(UpdateSubject updateSubject, Guid subjectId);
     Task SoftDeleteSubject(Guid subjectId);
+    Task<IEnumerable<SubjectResponseDTO>> GetAllSubjectsByUserId(Guid userId);
 }

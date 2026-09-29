@@ -25,6 +25,13 @@ public class SubjectRepository : ISubjectRepository
             subject.Id == subjectId && !subject.IsSoftDeleted);
     }
 
+    public async Task<IEnumerable<Subject>> GetAllSubjectsByUserId(Guid userId)
+    {
+        return await _context.Subjects
+        .Where(subject => subject.CreatedBy == userId && !subject.IsSoftDeleted)
+        .ToListAsync();
+    }
+
     public async Task<IEnumerable<Subject>> GetAllSubjects()
     {
         return await _context.Subjects
