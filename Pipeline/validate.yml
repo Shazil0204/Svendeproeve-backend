@@ -1,0 +1,28 @@
+validate:
+  stage: validate
+  tags:
+    - backend
+  cache:
+    key: dotnet-nuget
+    paths:
+      - .nuget/packages/
+  variables:
+    CI_CONTAINER_NAME: "lms-ci-validate-$CI_JOB_ID"
+  script:
+    - mkdir -p "$CI_PROJECT_DIR/.nuget/packages"
+    - >-
+      docker run --rm --name "$CI_CONTAINER_NAME"
+      --user "$(id -u):$(id -g)"
+      -v "$CI_PROJECT_DIR:/workspace"
+      -w /workspace
+      -e HOME=/workspace
+      -e DOTNET_CLI_HOME=/workspace/.dotnet
+      -e NUGET_PACKAGES=/workspace/.nuget/packages
+      mcr.microsoft.com/dotnet/sdk:10.0
+      bash -c 'dotnet restore LMSBackend.slnx &&
+      dotnet build LMSBackend.slnx --configuration Release --no-restore &&
+      dotnet test LMSBackend.slnx --configuration Release --no-build --no-restore'
+  after_script:
+    - docker rm -f "$CI_CONTAINER_NAME" 2>/dev/null || true
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'

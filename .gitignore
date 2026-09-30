@@ -1,0 +1,9 @@
+src/LMSBackend.API/obj/
+src/LMSBackend.API/bin/
+src/LMSBackend.Application/obj/
+src/LMSBackend.Application/bin/
+src/LMSBackend.Infrastructure/obj/
+src/LMSBackend.Infrastructure/bin/
+src/LMSBackend.Domain/obj/
+src/LMSBackend.Domain/bin/
+.env
