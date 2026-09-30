@@ -44,4 +44,11 @@ public class EduGoalRepository : IEduGoalRepository
         _context.TaskEducationalGoals.RemoveRange(links);
         _context.EducationalGoals.Remove(eduGoal);
     }
+
+    public async Task<IReadOnlyList<EducationalGoal>> GetEduGoalBySubjectId(Guid subjectId)
+    {
+        return await _context.EducationalGoals
+            .Where(eduGoal => eduGoal.SubjectId == subjectId)
+            .ToListAsync();
+    }
 }

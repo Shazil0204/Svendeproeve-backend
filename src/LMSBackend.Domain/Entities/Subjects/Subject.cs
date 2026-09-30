@@ -28,7 +28,7 @@ public class Subject
 
     public void SoftDelete()
     {
-        Name = $"Deleted-{Name}";
+        Name = $"Deleted-{Name}-{Guid.NewGuid()}";
         IsSoftDeleted = true;
         DeletedAt = DateTimeOffset.UtcNow;
     }

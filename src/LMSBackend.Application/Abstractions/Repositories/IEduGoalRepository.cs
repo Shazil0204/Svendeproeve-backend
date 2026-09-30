@@ -9,4 +9,5 @@ public interface IEduGoalRepository
     Task<List<EducationalGoal>> GetEduGoalsBySubjectId(Guid subjectId);
     Task<IEnumerable<EducationalGoal>> GetAllEduGoals();
     Task DeleteEduGoal(EducationalGoal eduGoal);
+    Task<IReadOnlyList<EducationalGoal>> GetEduGoalBySubjectId(Guid subjectId);
 }

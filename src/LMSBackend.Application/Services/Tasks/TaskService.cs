@@ -129,6 +129,10 @@ public sealed class TaskService : ITaskService
         (await _repository.GetAssignmentsAsync(null, studentId, assignmentId, cancellationToken)).SingleOrDefault()
         ?? throw new NotFoundException("Assignment not found.");
 
+    public async Task<IReadOnlyList<TaskDto>> GetTasksBySubjectAsync(Guid subjectId, CancellationToken cancellationToken) =>
+        (await _repository.GetTasksBySubjectIdAsync(subjectId, cancellationToken))
+            .Select(ToDto).ToList();
+
     private async Task<TaskEntity> FindAsync(Guid taskId, CancellationToken cancellationToken) =>
         await _repository.GetByIdAsync(taskId, cancellationToken) ?? throw new NotFoundException("Task not found.");
 
