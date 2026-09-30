@@ -1,21 +1,19 @@
-name: lms-staging
+name: lms-production
 services:
   database:
     build:
       context: ..
       dockerfile: Docker/Dockerfile.database
-    container_name: lms-staging-database
+    container_name: lms-production-database
     restart: unless-stopped
     environment:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
-      - staging-postgres-data:/var/lib/postgresql/data
-    ports:
-      - "100.106.123.103:5432:5432"
+      - production-postgres-data:/var/lib/postgresql/data
     networks:
-      - staging-network
+      - production-database-network
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
       interval: 5s
@@ -27,11 +25,11 @@ services:
     build:
       context: ..
       dockerfile: Docker/Dockerfile.backend
-    image: ${STAGING_IMAGE:-lmsbackend-staging:local}
-    container_name: lms-staging-backend
+    image: ${PRODUCTION_IMAGE:-lmsbackend-production:local}
+    container_name: lms-production-backend
     restart: unless-stopped
     environment:
-      ASPNETCORE_ENVIRONMENT: Staging
+      ASPNETCORE_ENVIRONMENT: Production
       APP_BASE_URL: ${APP_BASE_URL}
       ConnectionStrings__DefaultConnection: "Host=database;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}"
       JWT_SECRET: ${JWT_SECRET}
@@ -45,7 +43,8 @@ services:
       ADMIN_EMAIL: ${ADMIN_EMAIL}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD}
     networks:
-      - staging-network
+      - production-backend-network
+      - production-database-network
     healthcheck:
       test: ["CMD-SHELL", "curl -fsS http://localhost:8080/health >/dev/null || exit 1"]
       interval: 5s
@@ -57,9 +56,13 @@ services:
         condition: service_healthy
 
 networks:
-  staging-network:
-    name: lms-staging-network
+  production-backend-network:
+    name: lms-production-backend-network
+
+  production-database-network:
+    name: lms-production-database-network
+    internal: true
 
 volumes:
-  staging-postgres-data:
-    name: lms-staging-postgres-data
+  production-postgres-data:
+    name: lms-production-postgres-data

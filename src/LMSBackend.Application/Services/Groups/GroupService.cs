@@ -60,14 +60,6 @@ public sealed class GroupService : IGroupService
         await CheckNameAsync(name, null, cancellationToken);
         StudentGroup group = new StudentGroup(name);
         await _repository.AddAsync(group, cancellationToken);
-        await _auditService.LogAsync(
-            userId,
-            AuditAction.Created,
-            "Group created",
-            nameof(StudentGroup),
-            group.Id,
-            cancellationToken);
-
         await _unitOfWork.SaveChangesAsync(cancellationToken);
         return new GroupDto(group.Id, group.Name, group.CreatedAt);
     }
@@ -79,13 +71,6 @@ public sealed class GroupService : IGroupService
         name = ValidateName(name);
         await CheckNameAsync(name, id, cancellationToken);
         group.UpdateName(name);
-        await _auditService.LogAsync(
-            userId,
-            AuditAction.Updated,
-            "Group renamed",
-            nameof(StudentGroup),
-            group.Id,
-            cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
         return new GroupDto(group.Id, group.Name, group.CreatedAt);
     }
@@ -95,13 +80,6 @@ public sealed class GroupService : IGroupService
         Guid userId = _currentUserService.UserId ?? throw new UnauthorizedAccessException("User is not authenticated.");
         StudentGroup group = await FindAsync(id, cancellationToken);
         group.SoftDelete();
-        await _auditService.LogAsync(
-            userId,
-            AuditAction.Deleted,
-            "Group deleted",
-            nameof(StudentGroup),
-            group.Id,
-            cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
     }
 

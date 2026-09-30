@@ -1,0 +1,223 @@
+production-merge-sanity:
+  stage: validate
+  tags:
+    - backend
+
+  script:
+    - |
+      if [ "$CI_MERGE_REQUEST_TARGET_BRANCH_NAME" = "main" ] &&
+         [ "$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME" != "staging" ]; then
+        echo "ERROR: main only accepts merge requests from staging."
+        echo "Source: $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME"
+        echo "Target: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME"
+        exit 1
+      fi
+
+      echo "Production merge source check passed."
+
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"'
+
+production-build:
+  stage: production-build
+  tags:
+    - backend
+  environment:
+    name: production
+
+  variables:
+    PRODUCTION_IMAGE: "lmsbackend-production:$CI_COMMIT_SHORT_SHA"
+
+  script:
+    - echo "Building production candidate $PRODUCTION_IMAGE"
+
+    - docker build
+      --file Docker/Dockerfile.backend
+      --tag "$PRODUCTION_IMAGE"
+      .
+
+    - docker image inspect "$PRODUCTION_IMAGE" > /dev/null
+    - echo "Production candidate built successfully $PRODUCTION_IMAGE"
+
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main" && $CI_PIPELINE_SOURCE == "push"'
+
+production-database:
+  stage: production-database
+  tags:
+    - backend
+  environment:
+    name: production
+
+  variables:
+    PRODUCTION_IMAGE: "lmsbackend-production:$CI_COMMIT_SHORT_SHA"
+
+  script:
+    - echo "Starting production PostgreSQL database"
+
+    - docker compose
+      -f Docker/docker-compose.production.yaml
+      up
+      --detach
+      --build
+      --wait
+      database
+
+    - echo "Production PostgreSQL database is healthy"
+    - echo "Initializing production database"
+
+    - docker compose
+      -f Docker/docker-compose.production.yaml
+      run
+      --rm
+      --no-deps
+      backend
+      --initialize-database
+
+    - echo "Production database initialized successfully"
+
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main" && $CI_PIPELINE_SOURCE == "push"'
+
+production-deploy:
+  stage: production-deploy
+  tags:
+    - backend
+  environment:
+    name: production
+
+  variables:
+    PRODUCTION_IMAGE: "lmsbackend-production:$CI_COMMIT_SHORT_SHA"
+
+  script:
+    - echo "Recording currently deployed production image"
+
+    - |
+      PREVIOUS_IMAGE="$(docker inspect \
+        --format='{{.Config.Image}}' \
+        lms-production-backend 2>/dev/null || true)"
+
+      if [ -n "$PREVIOUS_IMAGE" ]; then
+        echo "Currently deployed image: $PREVIOUS_IMAGE"
+      else
+        echo "No existing production backend found"
+      fi
+
+      printf 'PREVIOUS_IMAGE=%s\n' "$PREVIOUS_IMAGE" > production.env
+
+    - echo "Starting production backend $PRODUCTION_IMAGE"
+
+    - docker compose
+      -f Docker/docker-compose.production.yaml
+      up
+      --detach
+      --no-build
+      backend
+
+    - echo "Production backend container started"
+
+  artifacts:
+    reports:
+      dotenv: production.env
+    expire_in: 1 hour
+
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main" && $CI_PIPELINE_SOURCE == "push"'
+
+production-verify:
+  stage: production-verify
+  tags:
+    - backend
+  environment:
+    name: production
+
+  variables:
+    PRODUCTION_IMAGE: "lmsbackend-production:$CI_COMMIT_SHORT_SHA"
+
+  script:
+    - echo "Waiting for production backend health check"
+
+    - |
+      healthy=false
+
+      for attempt in $(seq 1 12); do
+        if docker inspect \
+          --format='{{.State.Health.Status}}' \
+          lms-production-backend 2>/dev/null | grep -qx "healthy"; then
+          echo "Production backend is healthy"
+          healthy=true
+          break
+        fi
+
+        echo "Backend not healthy yet ($attempt/12)"
+        sleep 5
+      done
+
+      if [ "$healthy" != "true" ]; then
+        echo "New production backend failed health check"
+        docker logs --tail 100 lms-production-backend || true
+
+        if [ -n "$PREVIOUS_IMAGE" ]; then
+          echo "Rolling back to $PREVIOUS_IMAGE"
+
+          PRODUCTION_IMAGE="$PREVIOUS_IMAGE" docker compose \
+            -f Docker/docker-compose.production.yaml \
+            up \
+            --detach \
+            --no-build \
+            --force-recreate \
+            backend
+
+          echo "Rollback container started"
+
+          rollback_healthy=false
+
+          for attempt in $(seq 1 12); do
+            if docker inspect \
+              --format='{{.State.Health.Status}}' \
+              lms-production-backend 2>/dev/null | grep -qx "healthy"; then
+              echo "Rollback successful - previous backend is healthy"
+              rollback_healthy=true
+              break
+            fi
+
+            echo "Rollback not healthy yet ($attempt/12)"
+            sleep 5
+          done
+
+          if [ "$rollback_healthy" != "true" ]; then
+            echo "CRITICAL: Rollback backend also failed health check"
+            docker logs --tail 100 lms-production-backend || true
+          fi
+        else
+          echo "No previous production image exists - rollback is not possible"
+        fi
+
+        exit 1
+      fi
+
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main" && $CI_PIPELINE_SOURCE == "push"'
+
+production-configure:
+  stage: production-configure
+  tags:
+    - backend
+
+  environment:
+    name: production
+
+  script:
+    - echo "Ensuring Nginx is connected to the production backend network"
+
+    - |
+      if ! docker network inspect lms-production-backend-network \
+        --format '{{range .Containers}}{{.Name}} {{end}}' | grep -qw nginx; then
+        docker network connect lms-production-backend-network nginx
+        echo "Nginx connected to lms-production-backend-network"
+      else
+        echo "Nginx is already connected to lms-production-backend-network"
+      fi
+
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main" && $CI_PIPELINE_SOURCE == "push"'

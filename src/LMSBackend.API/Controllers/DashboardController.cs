@@ -10,6 +10,12 @@ namespace LMSBackend.API.Controllers;
 [Route("api/v1/dashboard")]
 public sealed class DashboardController(IDashboardService dashboard) : ControllerBase
 {
+    [HttpGet("teacher/me")]
+    [Authorize(Roles = nameof(UserRole.Teacher))]
+    public async Task<ActionResult<TeacherDashboardDto>> GetTeacherMine(
+        [FromQuery] TeacherDashboardQuery query, CancellationToken cancellationToken) =>
+        Ok(await dashboard.GetTeacherMineAsync(query, cancellationToken));
+
     [HttpGet("me")]
     [Authorize(Roles = nameof(UserRole.Student))]
     public async Task<ActionResult<StudentDashboardDto>> GetMine([FromQuery] DashboardQuery query,

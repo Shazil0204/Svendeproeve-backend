@@ -4,6 +4,7 @@ namespace LMSBackend.Application.Abstractions.Dashboard;
 
 public interface IDashboardService
 {
+    Task<TeacherDashboardDto> GetTeacherMineAsync(TeacherDashboardQuery query, CancellationToken cancellationToken);
     Task<StudentDashboardDto> GetMineAsync(DashboardQuery query, CancellationToken cancellationToken);
     Task<StudentDashboardDto> GetStudentAsync(Guid studentId, DashboardQuery query, CancellationToken cancellationToken);
     Task<PageDto<StudentProgressDto>> ListStudentsAsync(StudentDashboardQuery query, CancellationToken cancellationToken);
