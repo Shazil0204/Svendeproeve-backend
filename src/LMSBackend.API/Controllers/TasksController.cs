@@ -57,5 +57,9 @@ public sealed class TasksController : ControllerBase
     public async Task<ActionResult<IReadOnlyList<TaskObjectiveDto>>> SetObjectives(Guid taskId,
         UpdateTaskObjectivesRequest request, CancellationToken cancellationToken) =>
         Ok(await _tasks.SetObjectivesAsync(taskId, request, cancellationToken));
+
+    [HttpGet("subject/{subjectId:guid}")]
+    public async Task<ActionResult<IReadOnlyList<TaskDto>>> GetTasksBySubject(Guid subjectId, CancellationToken cancellationToken) =>
+        Ok(await _tasks.GetTasksBySubjectAsync(subjectId, cancellationToken));
 }
 

@@ -12,4 +12,5 @@ public interface IEduGoalService
     Task<IEnumerable<EduGoalResponse>> GetAllEduGoals();
     Task UpdateEduGoalUpdateContent(Guid eduGoalId, UpdateEduGoalRequest upd);
     Task DeleteEduGoal(Guid eduGoalId);
+    Task<IReadOnlyList<EduGoalResponse>> GetEduGoalBySubjectId(Guid subjectId);
 }

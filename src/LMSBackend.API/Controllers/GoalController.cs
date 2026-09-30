@@ -69,5 +69,13 @@ namespace LMSBackend.API.Controllers
             await _eduGoalService.DeleteEduGoal(id);
             return NoContent();
         }
+
+        [Authorize(Roles = "Teacher, Student")]
+        [HttpGet("single/subjectid/{subjectId}")]
+        public async Task<IActionResult> GetEduGoalBySubjectId(Guid subjectId)
+        {
+            IReadOnlyList<EduGoalResponse> eduGoals = await _eduGoalService.GetEduGoalBySubjectId(subjectId);
+            return Ok(eduGoals);
+        }
     }
 }
