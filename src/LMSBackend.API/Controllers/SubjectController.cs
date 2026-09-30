@@ -62,10 +62,10 @@ namespace LMSBackend.API.Controllers
         }
         
         [Authorize(Roles = "Teacher, Student")]
-        [HttpGet("user/{userId}")]
-        public async Task<IActionResult> GetAllSubjectsByUserId(Guid userId)
+        [HttpGet("getallmysubjects")]
+        public async Task<IActionResult> GetAllSubjectsByUserId()
         {
-            IEnumerable<SubjectResponseDTO> subjects = await _subjectService.GetAllSubjectsByUserId(userId);
+            IEnumerable<SubjectResponseDTO> subjects = await _subjectService.GetAllSubjectsByUserId();
             return Ok(subjects);
         }
     }

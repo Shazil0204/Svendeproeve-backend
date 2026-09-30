@@ -60,8 +60,9 @@ public class SubjectService : ISubjectService
         await _unitOfWork.SaveChangesAsync();
     }
 
-    public async Task<IEnumerable<SubjectResponseDTO>> GetAllSubjectsByUserId(Guid userId)
+    public async Task<IEnumerable<SubjectResponseDTO>> GetAllSubjectsByUserId()
     {
+        Guid userId = _currentUserService.UserId ?? throw new UnauthorizedAccessException("User is not authenticated");
         IEnumerable<Subject> subjects = await _subjectRepository.GetAllSubjectsByUserId(userId);
         return subjects.Select(subject => new SubjectResponseDTO(subject.Id, subject.Name, subject.CreatedAt, subject.CreatedBy));
     }
