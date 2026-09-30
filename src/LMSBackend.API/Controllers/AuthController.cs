@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http;
 using LMSBackend.Application.DTOs.Users;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
+using LMSBackend.Domain.Enums.Users;
 
 namespace LMSBackend.API.Controllers
 {
@@ -48,7 +49,7 @@ namespace LMSBackend.API.Controllers
                 {
                     HttpOnly = true,
                     Secure = true,
-                    SameSite = SameSiteMode.Strict,
+                    SameSite = SameSiteMode.None,
                     Expires = result.TokenResponse.AccessTokenExpiresAt
                 });
 
@@ -59,14 +60,14 @@ namespace LMSBackend.API.Controllers
                 {
                     HttpOnly = true,
                     Secure = true,
-                    SameSite = SameSiteMode.Strict,
+                    SameSite = SameSiteMode.None,
                     Expires = result.TokenResponse.RefreshTokenExpiresAt
                 });
 
             return Ok(result.User);
         }
 
-        [Authorize]
+        [AllowAnonymous]
         [HttpPost("logout")]
         public async Task<IActionResult> Logout(
             CancellationToken cancellationToken)
@@ -93,7 +94,7 @@ namespace LMSBackend.API.Controllers
             return NoContent();
         }
 
-        [Authorize]
+        [Authorize(Roles = $"{nameof(UserRole.Student)},{nameof(UserRole.Teacher)},{nameof(UserRole.Administrator)}")]
         [HttpPost("refresh")]
         public async Task<ActionResult<TokenResponse>> Refresh(
             CancellationToken cancellationToken)
@@ -114,7 +115,7 @@ namespace LMSBackend.API.Controllers
                 {
                     HttpOnly = true,
                     Secure = true,
-                    SameSite = SameSiteMode.Strict,
+                    SameSite = SameSiteMode.None,
                     Expires = result.AccessTokenExpiresAt
                 });
 
@@ -125,7 +126,7 @@ namespace LMSBackend.API.Controllers
                 {
                     HttpOnly = true,
                     Secure = true,
-                    SameSite = SameSiteMode.Strict,
+                    SameSite = SameSiteMode.None,
                     Expires = result.RefreshTokenExpiresAt
                 });
 

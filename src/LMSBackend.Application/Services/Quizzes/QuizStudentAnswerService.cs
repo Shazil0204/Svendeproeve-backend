@@ -145,6 +145,106 @@ public class QuizStudentAnswerService : IQuizStudentAnswerService
                 quizStudent.Status.ToString()));
     }
 
+    public async Task<QuizStudentResponse> GetCurrentStudentQuizStatusAsync(
+        Guid quizId)
+    {
+        EnsureStudent();
+
+        Guid studentId = GetCurrentUserId();
+        QuizStudent? quizStudent =
+            await _quizStudentAnswerRepository.GetQuizStudent(
+                quizId,
+                studentId);
+
+        if (quizStudent is null)
+        {
+            throw new NotFoundException("Student is not assigned to this quiz.");
+        }
+
+        return new QuizStudentResponse(
+            quizStudent.Id,
+            quizStudent.QuizId,
+            quizStudent.StudentId,
+            quizStudent.AssignedAt,
+            quizStudent.ScorePercentage?.Value,
+            quizStudent.Passed,
+            quizStudent.CompletedAt,
+            quizStudent.Status.ToString());
+    }
+
+    public async Task<QuizReviewResponse> GetQuizReviewAsync(
+        Guid quizId,
+        Guid studentId)
+    {
+        Guid currentUserId = GetCurrentUserId();
+        if (_currentUserService.Role == "Student")
+        {
+            if (currentUserId != studentId)
+            {
+                throw new UnauthorizedAccessException(
+                    "Students can only review their own quiz.");
+            }
+        }
+        else if (_currentUserService.Role == "Teacher")
+        {
+            await GetOwnedQuizAsync(quizId, currentUserId);
+        }
+        else
+        {
+            throw new UnauthorizedAccessException(
+                "Only teachers and students can review quiz results.");
+        }
+
+        Quiz? quiz = await _quizRepository.GetQuizById(quizId);
+        if (quiz is null)
+        {
+            throw new NotFoundException("Quiz not found.");
+        }
+
+        QuizStudent? quizStudent =
+            await _quizStudentAnswerRepository.GetQuizStudent(quizId, studentId);
+        if (quizStudent?.CompletedAt is null || quizStudent.ScorePercentage is null)
+        {
+            throw new ValidationException("The student has not completed this quiz.");
+        }
+
+        IEnumerable<QuizAnswer> answers =
+            await _quizStudentAnswerRepository.GetStudentAnswersByQuizStudentId(quizStudent.Id);
+        Dictionary<Guid, QuizAnswer> answersByQuestion =
+            answers.ToDictionary(answer => answer.QuizQuestionId);
+        IEnumerable<QuizQuestion> questions =
+            await _quizQuestionRepository.GetQuizQuestionsByQuizId(quizId);
+
+        List<QuizReviewQuestionResponse> reviewQuestions = [];
+        foreach (QuizQuestion question in questions)
+        {
+            List<QuizAnswerOption> options =
+                (await _quizAnswerOptionRepository
+                    .GetQuizAnswerOptionsByQuestionId(question.Id))
+                .ToList();
+            QuizAnswerOption? correctOption = options.FirstOrDefault(option => option.IsCorrect);
+            answersByQuestion.TryGetValue(question.Id, out QuizAnswer? submittedAnswer);
+            QuizAnswerOption? selectedOption = submittedAnswer is null
+                ? null
+                : options.FirstOrDefault(option => option.Id == submittedAnswer.SelectedAnswerOptionId);
+
+            reviewQuestions.Add(new QuizReviewQuestionResponse(
+                question.Id,
+                question.QuestionText,
+                selectedOption?.AnswerText,
+                correctOption?.AnswerText ?? string.Empty,
+                selectedOption is not null && correctOption is not null && selectedOption.Id == correctOption.Id));
+        }
+
+        return new QuizReviewResponse(
+            quiz.Id,
+            quiz.Title,
+            studentId,
+            quizStudent.ScorePercentage.Value,
+            quizStudent.CompletedAt,
+            reviewQuestions);
+    }
+
     public async Task<StudentQuizResponse> GetStudentQuizAsync(
         Guid quizId,
         Guid studentId)
@@ -165,6 +265,12 @@ public class QuizStudentAnswerService : IQuizStudentAnswerService
         {
             throw new UnauthorizedAccessException(
                 "Student is not assigned to this quiz.");
+        }
+
+        if (quizStudent.CompletedAt is not null)
+        {
+            throw new ValidationException(
+                "This quiz has already been completed.");
         }
 
         IEnumerable<QuizQuestion> questions =
@@ -353,6 +459,25 @@ public class QuizStudentAnswerService : IQuizStudentAnswerService
             Guid quizId,
             Guid studentId)
     {
+        Guid currentUserId = GetCurrentUserId();
+        if (_currentUserService.Role == "Student")
+        {
+            if (currentUserId != studentId)
+            {
+                throw new UnauthorizedAccessException(
+                    "Students can only review their own answers.");
+            }
+        }
+        else if (_currentUserService.Role == "Teacher")
+        {
+            await GetOwnedQuizAsync(quizId, currentUserId);
+        }
+        else
+        {
+            throw new UnauthorizedAccessException(
+                "Only teachers and students can review quiz answers.");
+        }
+
         QuizStudent? quizStudent =
             await _quizStudentAnswerRepository.GetQuizStudent(
                 quizId,
@@ -362,6 +487,12 @@ public class QuizStudentAnswerService : IQuizStudentAnswerService
         {
             throw new NotFoundException(
                 "Student is not assigned to this quiz.");
+        }
+
+        if (quizStudent.CompletedAt is null)
+        {
+            throw new ValidationException(
+                "Quiz answers are available after the quiz is completed.");
         }
 
         IEnumerable<QuizAnswer> answers =

@@ -102,4 +102,24 @@ public class UserService : IUserService
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
     }
+
+    public async Task<List<UserResponse>> GetAllUsersAsync(
+        CancellationToken cancellationToken = default)
+    {
+        List<(User User, bool IsMissingConsents)> users =
+            await _userRepository.GetAllWithConsentStatusAsync(cancellationToken);
+
+        List<UserResponse> response = users
+            .Select(x => new UserResponse(
+                x.User.Id,
+                x.User.Name,
+                x.User.Email.Value,
+                x.User.Role,
+                x.User.CreatedAt,
+                x.IsMissingConsents
+            ))
+            .ToList();
+
+        return response;
+    }
 }

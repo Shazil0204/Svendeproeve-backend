@@ -15,4 +15,6 @@ public interface IQuizService
     Task<IEnumerable<QuizResponse>> GetAllQuizzesAsync();
 
     Task DeleteQuizAsync(Guid quizId);
+
+    Task<IEnumerable<QuizResponse>> GetQuizzesByStudentIdAsync();
 }

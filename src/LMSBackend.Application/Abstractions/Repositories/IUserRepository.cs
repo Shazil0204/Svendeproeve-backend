@@ -28,4 +28,7 @@ public interface IUserRepository
     Task<IReadOnlyList<ConsentType>> GetMissingConsentsAsync(
         Guid userId,
         CancellationToken cancellationToken = default);
+
+    Task<List<(User User, bool IsMissingConsents)>> GetAllWithConsentStatusAsync(
+        CancellationToken cancellationToken = default);
 }

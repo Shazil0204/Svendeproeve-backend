@@ -192,6 +192,15 @@ public class QuizService : IQuizService
         await _unitOfWork.SaveChangesAsync();
     }
 
+    public async Task<IEnumerable<QuizResponse>> GetQuizzesByStudentIdAsync()
+    {
+        Guid studentId = GetCurrentUserId();
+        IEnumerable<Quiz> quizzes =
+            await _quizRepository.GetQuizzesByStudentId(studentId);
+
+        return quizzes.Select(MapQuiz);
+    }
+
     private Guid GetCurrentUserId()
     {
         return _currentUserService.UserId

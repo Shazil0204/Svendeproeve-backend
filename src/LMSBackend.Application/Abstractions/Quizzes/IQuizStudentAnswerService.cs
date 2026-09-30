@@ -15,6 +15,10 @@ public interface IQuizStudentAnswerService
     Task<IEnumerable<QuizStudentResponse>>
         GetQuizStudentsAsync(Guid quizId);
 
+    Task<QuizStudentResponse> GetCurrentStudentQuizStatusAsync(Guid quizId);
+
+    Task<QuizReviewResponse> GetQuizReviewAsync(Guid quizId, Guid studentId);
+
     Task<StudentQuizResponse> GetStudentQuizAsync(
         Guid quizId,
         Guid studentId);

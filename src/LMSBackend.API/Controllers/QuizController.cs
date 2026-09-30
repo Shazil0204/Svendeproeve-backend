@@ -1,5 +1,6 @@
 using LMSBackend.Application.Abstractions.Quizzes;
 using LMSBackend.Application.DTOs.Quizzes;
+using LMSBackend.Domain.Enums.Users;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -53,6 +54,7 @@ public class QuizController : ControllerBase
     }
 
     [HttpGet("{quizId:guid}")]
+    [Authorize(Roles = "Teacher, Student")]
     public async Task<ActionResult<QuizResponse>> GetQuiz(
         Guid quizId)
     {
@@ -63,6 +65,7 @@ public class QuizController : ControllerBase
     }
 
     [HttpGet]
+    [Authorize(Roles = "Teacher")]
     public async Task<ActionResult<IEnumerable<QuizResponse>>> GetAllQuizzes()
     {
         IEnumerable<QuizResponse> quizzes =
@@ -71,12 +74,23 @@ public class QuizController : ControllerBase
         return Ok(quizzes);
     }
 
+    [Authorize(Roles = "Teacher, Student")]
     [HttpGet("user/{userId:guid}")]
     public async Task<ActionResult<IEnumerable<QuizResponse>>> GetQuizzesByUser(
         Guid userId)
     {
         IEnumerable<QuizResponse> quizzes =
             await _quizService.GetQuizzesByUserIdAsync(userId);
+
+        return Ok(quizzes);
+    }
+
+    [Authorize(Roles = "Student")]
+    [HttpGet("student")]
+    public async Task<ActionResult<IEnumerable<QuizResponse>>> GetQuizzesByStudent()
+    {
+        IEnumerable<QuizResponse> quizzes =
+            await _quizService.GetQuizzesByStudentIdAsync();
 
         return Ok(quizzes);
     }
@@ -122,6 +136,7 @@ public class QuizController : ControllerBase
     }
 
     [HttpGet("{quizId:guid}/questions")]
+    [Authorize(Roles = "Teacher")]
     public async Task<ActionResult<IEnumerable<QuizQuestionResponse>>>
         GetQuestions(Guid quizId)
     {
@@ -173,6 +188,7 @@ public class QuizController : ControllerBase
     }
 
     [HttpGet("questions/{questionId:guid}/options")]
+    [Authorize(Roles = "Teacher")]
     public async Task<ActionResult<IEnumerable<QuizAnswerOptionResponse>>>
         GetAnswerOptions(Guid questionId)
     {
@@ -240,6 +256,32 @@ public class QuizController : ControllerBase
     // Student Quiz
     // --------------------
 
+    [HttpGet("{quizId:guid}/students/{studentId:guid}/review")]
+    [Authorize(Roles = "Teacher, Student")]
+    public async Task<ActionResult<QuizReviewResponse>> GetQuizReview(
+        Guid quizId,
+        Guid studentId)
+    {
+        QuizReviewResponse review =
+            await _quizStudentAnswerService.GetQuizReviewAsync(
+                quizId,
+                studentId);
+
+        return Ok(review);
+    }
+
+    [HttpGet("{quizId:guid}/student-status")]
+    [Authorize(Roles = "Student")]
+    public async Task<ActionResult<QuizStudentResponse>> GetCurrentStudentQuizStatus(
+        Guid quizId)
+    {
+        QuizStudentResponse status =
+            await _quizStudentAnswerService
+                .GetCurrentStudentQuizStatusAsync(quizId);
+
+        return Ok(status);
+    }
+
     [HttpGet("{quizId:guid}/students/{studentId:guid}")]
     [Authorize(Roles = "Student")]
     public async Task<ActionResult<StudentQuizResponse>> GetStudentQuiz(
@@ -270,6 +312,7 @@ public class QuizController : ControllerBase
     }
 
     [HttpGet("{quizId:guid}/students/{studentId:guid}/answers")]
+    [Authorize(Roles = "Teacher, Student")]
     public async Task<ActionResult<IEnumerable<QuizAnswerResponse>>>
         GetStudentAnswers(
             Guid quizId,

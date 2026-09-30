@@ -11,4 +11,7 @@ public interface IUserService
     Task<UserResponse> UpdateUserNameAndEmailAsync(Guid userId, UpdateUserNameAndEmailRequest request, CancellationToken cancellationToken = default);
 
     Task SoftDeleteUserAsync(Guid userId, CancellationToken cancellationToken = default);
+
+    Task<List<UserResponse>> GetAllUsersAsync(
+        CancellationToken cancellationToken = default);
 }

@@ -49,5 +49,13 @@ namespace LMSBackend.API.Controllers
             await _userService.SoftDeleteUserAsync(userId, cancellationToken);
             return NoContent();
         }
+
+        [Authorize(Roles = $"{nameof(UserRole.Administrator)},{nameof(UserRole.Teacher)}")]
+        [HttpGet]
+        public async Task<ActionResult<List<UserResponse>>> GetAllUsers(CancellationToken cancellationToken)
+        {
+            List<UserResponse> users = await _userService.GetAllUsersAsync(cancellationToken);
+            return Ok(users);
+        }
     }
 }
